@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/shabnam.ttf",
+      "sha1": "7e19a2c572e328e927a96aa4d1d81dd1f22990c5"
+    },
+    {
+      "path": "assets/fonts/shabnamLight.ttf",
+      "sha1": "2e41a8d36c6c4266a3a005628061303fdc2f900e"
+    },
+    {
+      "path": "assets/fonts/shabnamMed.ttf",
+      "sha1": "59e9ebe5ebf7343746d337e7164c01b36b1997c7"
+    }
+  ]
+}
