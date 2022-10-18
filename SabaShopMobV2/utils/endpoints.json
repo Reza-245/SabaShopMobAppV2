@@ -1,6 +1,12 @@
 {
   "URL": "http://192.168.1.137:3000/",
   "getProducts": "api/getproduct",
+  "getFirstProducts": "api/getfirstproducts",
+  "getNewestProducts": "api/getnewestproducts",
+  "getSimilarProducts": "api/getsimilarproducts/",
+  "getFavorites": "api/getfavs",
+  "getShopProducts": "api/getshopproducts",
   "sendSms": "api/sendsabasms",
-  "login": "api/loginshop"
+  "login": "api/loginshop",
+  "finalSubmit": "/api/createorder"
 }

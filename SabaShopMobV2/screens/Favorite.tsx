@@ -24,6 +24,7 @@ import {
   TouchableOpacity,
   Button,
 } from 'react-native';
+import endpoints from '../utils/endpoints.json';
 import MenuModal from '../components/_menuModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -36,10 +37,52 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-
+import {useFocusEffect} from '@react-navigation/native';
+import {favoriteAction} from '../realm/RealmFPList';
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator,
+} from 'react-native-indicators';
+import {useNavigation} from '@react-navigation/native';
+import {isEmpty} from 'lodash';
+import axios from 'axios';
 const Favorite = () => {
+  const navigate = useNavigation();
   const [supportModal, setSupportModal] = React.useState<boolean>(false);
+  const [favorites, setFavorites] = React.useState([]);
+  const [favoritesPorduct, setFavoritesProduct] = React.useState([]);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      (async () => {
+        const favProducts = await favoriteAction(
+          'sync',
+          setFavorites,
+          0,
+          setLoading,
+        );
+        (async () =>
+          await axios
+            .post(endpoints.getFavorites, JSON.stringify({favs: favProducts}))
+            .then(({data, status}) => {
+              setFavoritesProduct(data);
+            }))();
+      })();
+    }, []),
+  );
+  async function handleDeleteFavorite(id: number) {
+    favoriteAction('delete', setFavorites, id);
+    const updated_favproducts = favoritesPorduct?.filter(pro => pro.id != id);
+    setFavoritesProduct(updated_favproducts);
+  }
   return (
     <View style={styles.favoriteView}>
       <View style={styles.favoriteTitleView}>
@@ -48,305 +91,73 @@ const Favorite = () => {
           <AntDesign size={19} name="heart" color="#fff" />
         </View>
       </View>
-      <ScrollView style={styles.favoriteContentView}>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
+      <View style={styles.favoriteContentLoadingView}>
+        {loading ? (
+          <MaterialIndicator
+            color={SabaColors.sabaGreen}
+            animationDuration={2900}
+            size={48}
+          />
+        ) : isEmpty(favorites) ? (
+          <View style={styles.favoriteContentNoContentImageView}>
+            <Image
+              source={require('../assets/img/favorite/nofavorite.png')}
+              style={styles.favoriteContentNoContentImage}
+            />
           </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.favoriteContentItemView}>
-          <View style={styles.favoriteContentItemNavView}>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.favoriteContentItemNavStatusView}>
-              <Ionicons name="close" color={SabaColors.sabaRed} size={17} />
-            </TouchableOpacity>
-            <View style={styles.favoriteContentItemNavIconView}>
-              <Text style={styles.favoriteContentItemNavIconText}>موجود</Text>
-            </View>
-          </View>
-          <View style={styles.favoriteContentItemArticleView}>
-            <View style={styles.favoriteContentItemInfoView}>
-              <Text style={styles.favoriteContentItemInfoTitle}>
-                عطر دو عددی - 160 گرمی
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت نقدی 7,300 تومان
-              </Text>
-              <Text style={styles.favoriteContentItemInfoPrice}>
-                قیمت چکی 12,500 تومان
-              </Text>
-            </View>
-            <View style={styles.favoriteContentItemImageView}>
-              <Image
-                style={styles.favoriteContentItemImage}
-                source={require('../assets/test1.jpg')}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
+        ) : (
+          <ScrollView style={styles.favoriteContentView}>
+            {favoritesPorduct?.map((F, index) => (
+              <TouchableOpacity
+                onPress={() =>
+                  navigate.navigate('PRODUCT_SELF', {
+                    product: F,
+                  })
+                }
+                key={index}
+                activeOpacity={0.8}
+                style={styles.favoriteContentItemView}>
+                <View style={styles.favoriteContentItemNavView}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={() => handleDeleteFavorite(F.id)}
+                    style={styles.favoriteContentItemNavStatusView}>
+                    <Ionicons
+                      name="close"
+                      color={SabaColors.sabaRed}
+                      size={17}
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.favoriteContentItemNavIconView}>
+                    <Text style={styles.favoriteContentItemNavIconText}>
+                      موجود
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.favoriteContentItemArticleView}>
+                  <View style={styles.favoriteContentItemInfoView}>
+                    <Text style={styles.favoriteContentItemInfoTitle}>
+                      {F.nam}
+                    </Text>
+                    <Text style={styles.favoriteContentItemInfoPrice}>
+                      قیمت نقدی {F.price} تومان
+                    </Text>
+                    <Text style={styles.favoriteContentItemInfoPrice}>
+                      قیمت چکی {F.pric} تومان
+                    </Text>
+                  </View>
+                  <View style={styles.favoriteContentItemImageView}>
+                    <Image
+                      style={styles.favoriteContentItemImage}
+                      source={{uri: endpoints.URL + F.pic_path}}
+                    />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
     </View>
   );
 };
@@ -383,6 +194,17 @@ const styles = StyleSheet.create({
   },
   favoriteContentView: {
     paddingHorizontal: 10,
+  },
+  favoriteContentLoadingView: {
+    flex: 1,
+  },
+  favoriteContentNoContentImageView: {
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
+  },
+  favoriteContentNoContentImage: {
+    resizeMode: 'contain',
+    width: '100%',
   },
   favoriteContentItemView: {
     borderRadius: 14,

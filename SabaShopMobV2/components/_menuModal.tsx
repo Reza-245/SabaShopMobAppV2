@@ -28,10 +28,21 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
-
+import {toastCustom} from '../utils/toastCustom';
 import Modal from 'react-native-modal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation} from '@react-navigation/native';
+import {useToast} from 'react-native-toast-notifications';
 
 const _menuModal = ({supportModal, setSupportModal}: any) => {
+  const navigate = useNavigation();
+  const toast = useToast();
+
+  async function logout() {
+    await AsyncStorage.removeItem('saba2token');
+    navigate.replace('LOGIN');
+    toast.show('با موفقیت خارج شدید', toastCustom().info);
+  }
   return (
     <Modal
       animationIn="fadeInRight"
@@ -91,7 +102,9 @@ const _menuModal = ({supportModal, setSupportModal}: any) => {
               }}>
               <FontAwesome5 color="#fff" name="phone" size={26} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalMenuNavbarItem}>
+            <TouchableOpacity
+              onPress={logout}
+              style={styles.modalMenuNavbarItem}>
               <MaterialIcons color="#fff" name="logout" size={30} />
             </TouchableOpacity>
           </View>

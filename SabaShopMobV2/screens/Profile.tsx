@@ -36,10 +36,21 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useToast} from 'react-native-toast-notifications';
+import {toastCustom} from '../utils/toastCustom';
 
 const Profile = () => {
-  const [supportModal, setSupportModal] = React.useState<boolean>(false);
+  const toast = useToast();
 
+  const navigate = useNavigation();
+  const [supportModal, setSupportModal] = React.useState<boolean>(false);
+  async function logout() {
+    await AsyncStorage.removeItem('saba2token');
+    navigate.replace('LOGIN');
+    toast.show('با موفقیت خارج شدید', toastCustom().info);
+  }
   return (
     <>
       <View style={styles.profileMenuView}>
@@ -114,7 +125,10 @@ const Profile = () => {
             />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.5} style={styles.profileMenuItem}>
+        <TouchableOpacity
+          onPress={logout}
+          activeOpacity={0.5}
+          style={styles.profileMenuItem}>
           <View style={styles.profileMenuItemRight}>
             <View
               style={{

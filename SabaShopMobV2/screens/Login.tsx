@@ -22,6 +22,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
   Button,
 } from 'react-native';
 import MenuModal from '../components/_menuModal';
@@ -43,10 +44,20 @@ import {
 import axios from 'axios';
 import endpoints from '../utils/endpoints.json';
 import {useNavigation} from '@react-navigation/native';
-
+import {CounterDown} from '../utils/useCounterDown';
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator,
+} from 'react-native-indicators';
 const App = () => {
   const toast = useToast();
-  const countdownRef = React.useRef(null);
   const [supportModal, setSupportModal] = React.useState<boolean>(false);
   const [nam, setNam] = React.useState<string>();
   const [tel, setTel] = React.useState<string>();
@@ -54,7 +65,28 @@ const App = () => {
   const [confirmCode, setConfirmCode] = React.useState<string>();
   const [confirmCodeBool, setConfirmCodeBool] = React.useState<boolean>(false);
   const navigation = useNavigation();
+  const [counter, setCounter] = React.useState<number>(0);
+  const [switcher, setSwitcher] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
+
+  function resetTimer() {
+    setCounter(45);
+    setSwitcher(!switcher);
+  }
+  useMemo(() => {
+    if (counter != 0)
+      setTimeout(() => {
+        setCounter(counter - 1);
+      }, 1000);
+    else {
+      setConfirmCodeBool(false);
+      setSwitcher(false);
+      setConfirmCode('');
+    }
+  }, [counter]);
   async function sendConfirmCode() {
+    toast.show('درحال ارسال کد تاییدیه', toastCustom().info);
+    resetTimer();
     setConfirmCodeBool(true);
     const code = Math.round(Math.random() * (9999 - 1000) + 1000);
     setCodeGenerated(code);
@@ -71,14 +103,12 @@ const App = () => {
           'کد تاییدیه با موفقیت به شماره همراه شما ارسال شد',
           toastCustom().success,
         );
-      });
-    console.log('dwaddadd', {
-      mobileNumber: tel,
-      codeContent: code,
-    });
+      })
+      .catch(() => {});
   }
   async function handleLogin() {
-    if (codeGenerated === Number(confirmCode)) {
+    setLoading(true);
+    if (codeGenerated === Number(confirmCode) && !loading) {
       await axios
         .post(
           endpoints.login,
@@ -97,7 +127,6 @@ const App = () => {
             setNam('');
             setTel('');
             setConfirmCodeBool(false);
-            setConfirmCode('');
           } else if (status == 204)
             toast.show(
               'شما هنوز از سمت کارشناسان تایید نشده اید باید صبور باشید',
@@ -105,14 +134,11 @@ const App = () => {
             );
           else {
             toast.show('خوش آمدید', toastCustom().success);
-            console.log('ppplp', data);
-            await asyncStorage.setItem(
-              'saba2token',
-              parseInt(data.tel) * parseInt(data.tel),
-            );
-            navigation('HOME');
+            await asyncStorage.setItem('saba2token', `${data.nam}|${data.id}`);
+            navigation.replace('MAIN');
           }
-        });
+        })
+        .finally(() => setLoading(false));
     } else {
       toast.show('کد وارد شده صحیح نیست', toastCustom().danger);
     }
@@ -148,7 +174,7 @@ const App = () => {
             </View>
           </View>
         </View>
-        <View style={styles.loginContainer}>
+        <KeyboardAvoidingView style={styles.loginContainer}>
           <View style={styles.loginView}>
             <View style={styles.loginIconView}>
               <Image
@@ -163,6 +189,7 @@ const App = () => {
                   style={styles.loginFieldItemInput}
                   onChangeText={setNam}
                   value={nam}
+                  placeholderTextColor={SabaColors.sabaDarkGary}
                 />
                 <View style={styles.loginFieldItemIconView}>
                   <View style={styles.loginFieldItemIcon}>
@@ -181,6 +208,7 @@ const App = () => {
                   onChangeText={value => setTel(value.replace(/[^0-9]/g, ''))}
                   keyboardType="number-pad"
                   editable={!isEmpty(nam)}
+                  placeholderTextColor={SabaColors.sabaDarkGary}
                   value={tel}
                 />
                 <View style={styles.loginFieldItemIconView}>
@@ -196,53 +224,74 @@ const App = () => {
               <View
                 style={{
                   ...styles.loginFieldItem,
-                  opacity: !confirmCodeBool ? 0.6 : 1,
+                  backgroundColor: !confirmCodeBool
+                    ? SabaColors.sabaDarkGary
+                    : '#fff',
                 }}>
                 <TextInput
                   placeholder="کد تاییدیه"
-                  style={styles.loginFieldItemInput}
+                  style={{
+                    ...styles.loginFieldItemInput,
+                    opacity: !confirmCodeBool ? 0.6 : 1,
+                  }}
+                  placeholderTextColor={SabaColors.sabaDarkGary}
                   onChangeText={setConfirmCode}
                   editable={confirmCodeBool}
                   value={confirmCode}
+                  keyboardType="number-pad"
                 />
 
                 <View style={styles.loginFieldItemIconView}>
                   <TouchableOpacity
-                    onPress={() => {}}
+                    onPress={() => !switcher && sendConfirmCode()}
                     activeOpacity={0.5}
+                    disabled={isEmpty(nam) || isEmpty(tel) || confirmCodeBool}
                     style={{
                       ...styles.loginFieldItemIcon,
                       backgroundColor: SabaColors.sabaGold,
                     }}>
-                    <FontAwesome5 color="#fff" size={24} name="key" />
+                    {switcher ? (
+                      <Text style={styles.loginTimer}>{counter}</Text>
+                    ) : (
+                      <FontAwesome5 color="#fff" size={24} name="key" />
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.loginFieldItem}>
                 <TouchableOpacity
-                  onPress={confirmCodeBool ? handleLogin : sendConfirmCode}
-                  disabled={isEmpty(nam) || isEmpty(tel)}
+                  onPress={() => confirmCodeBool && handleLogin()}
+                  disabled={
+                    isEmpty(nam) ||
+                    isEmpty(tel) ||
+                    !confirmCodeBool ||
+                    isEmpty(confirmCode)
+                  }
                   style={styles.loginFieldItemButton}
                   activeOpacity={0.5}>
-                  <Text style={styles.loginFieldItemButtonText}>
-                    {isEmpty(nam)
-                      ? 'نام را وارد کنید'
-                      : isEmpty(tel)
-                      ? 'شماره همراه را با صفر وارد کنید'
-                      : tel?.length !== 11
-                      ? 'شماره همراه باید 11 رقم باشد'
-                      : !isEmpty(tel) && !confirmCodeBool
-                      ? 'ارسال کد تاییدیه'
-                      : isEmpty(confirmCode)
-                      ? 'کد تاییدیه را وارد کنید'
-                      : 'درخواست ورود'}
-                  </Text>
+                  {loading ? (
+                    <MaterialIndicator color="#fff" size={34} />
+                  ) : (
+                    <Text style={styles.loginFieldItemButtonText}>
+                      {isEmpty(nam)
+                        ? 'نام را وارد کنید'
+                        : isEmpty(tel)
+                        ? 'شماره همراه را با صفر وارد کنید'
+                        : tel?.length !== 11
+                        ? 'شماره همراه باید 11 رقم باشد'
+                        : !isEmpty(tel) && !confirmCodeBool
+                        ? 'برای ارسال کد تاییدیه روی کلید زرد کلیک کنید'
+                        : isEmpty(confirmCode)
+                        ? 'کد تاییدیه را وارد کنید'
+                        : 'درخواست ورود'}
+                    </Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </SafeAreaView>
   );
@@ -329,6 +378,7 @@ const styles = StyleSheet.create({
     width: '86%',
     textAlign: 'right',
     paddingHorizontal: 12,
+    color: SabaColors.sabaBlack,
   },
   loginFieldItemButton: {
     fontFamily: 'shabnam',
@@ -357,7 +407,7 @@ const styles = StyleSheet.create({
     backgroundColor: SabaColors.sabaOrange,
     borderRadius: 25,
     height: '100%',
-    width: '100%',
+    width: 44,
   },
   signupTextView: {},
   signupText: {
@@ -367,6 +417,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textShadowColor: SabaColors.sabaGreen,
     textShadowRadius: 4,
+  },
+  loginTimer: {
+    fontFamily: 'shabnamMed',
+    color: '#fff',
   },
 });
 

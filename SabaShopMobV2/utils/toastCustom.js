@@ -13,7 +13,7 @@ export function toastCustom() {
       placement: 'top',
       duration: 3000,
       animationType: 'zoom-in',
-      icon: <Feather name="check-circle" size={23} color="#2eff00" />,
+      // icon: <Feather name="check-circle" size={23} color="#2eff00" />,
       textStyle: {
         fontFamily: 'shabnam',
         color: '#2eff00',

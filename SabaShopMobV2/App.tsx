@@ -49,32 +49,50 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Products from './screens/Products';
-import Home from './screens/Home';
 import {ToastProvider} from 'react-native-toast-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const App = () => {
-  const Tab = createMaterialTopTabNavigator();
-  const [supportModal, setSupportModal] = React.useState<boolean>(false);
-  const images = [require('./assets/test1.jpg'), require('./assets/test2.jpg')];
-  const Stack = createStackNavigator();
+  try {
+    const Tab = createMaterialTopTabNavigator();
+    const [supportModal, setSupportModal] = React.useState<boolean | null>(
+      null,
+    );
+    const [initRouteName, setInitRouteName] = React.useState<string | null>(
+      null,
+    );
+    const images = [
+      require('./assets/test1.jpg'),
+      require('./assets/test2.jpg'),
+    ];
+    const Stack = createStackNavigator();
 
-  return (
-    <NavigationContainer>
-      <ToastProvider>
-        <SafeAreaView style={{height: MainScreen.height}}>
-          <Stack.Navigator
-            initialRouteName="LOGIN"
-            screenOptions={{headerShown: false}}>
-            <Stack.Screen name="MAIN" component={_MainLayout} />
-            <Stack.Screen name="PRODUCT_SELF" component={PorductSelf} />
-            <Stack.Screen name="PRODUCTS" component={Products} />
-            <Stack.Screen name="LOGIN" component={Login} />
-          </Stack.Navigator>
-        </SafeAreaView>
-      </ToastProvider>
-    </NavigationContainer>
-  );
+    useEffect(() => {
+      (async () => {
+        const sabaShopV2Token = await AsyncStorage.getItem('saba2token');
+        if (sabaShopV2Token) setInitRouteName('MAIN');
+        else setInitRouteName('LOGIN');
+      })();
+    }, []);
+    if (initRouteName === null) return null;
+    const MainWindow = Dimensions.get('window');
+    return (
+      <NavigationContainer>
+        <ToastProvider>
+          <SafeAreaView style={{height: MainWindow.height}}>
+            <Stack.Navigator
+              initialRouteName={initRouteName}
+              screenOptions={{headerShown: false}}>
+              <Stack.Screen name="MAIN" component={_MainLayout} />
+              <Stack.Screen name="PRODUCT_SELF" component={PorductSelf} />
+              <Stack.Screen name="PRODUCTS" component={Products} />
+              <Stack.Screen name="LOGIN" component={Login} />
+            </Stack.Navigator>
+          </SafeAreaView>
+        </ToastProvider>
+      </NavigationContainer>
+    );
+  } catch {}
 };
-const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
   MenuNavigatorView: {
     backgroundColor: SabaColors.sabaGreen,
