@@ -18,5 +18,5 @@ class UserSettingSerailizer(serializers.ModelSerializer):
 class CustomerUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerUser
-        fields =  ('nam','id')
+        fields =  ('nam',"tel",'id')
  

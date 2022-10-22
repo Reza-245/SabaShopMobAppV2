@@ -38,7 +38,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Modal from 'react-native-modal';
 import Login from '../screens/Login';
 import _menuModal from '../components/_menuModal';
-import PorductSelf from '../screens/PorductSelf';
+import ProductSelf from '../screens/ProductSelf';
 import {
   Colors,
   DebugInstructions,
@@ -52,20 +52,11 @@ import Shop from '../screens/Shop';
 import Home from '../screens/Home';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {shopAction} from '../realm/RealmShop';
 import Realm from 'realm';
-import {FPList, ProductCover, Shop as ShopSchema} from '../realm/Models';
 import {isEmpty} from 'lodash';
 import axios from 'axios';
-type TShop = {
-  _id: number;
-  orderedProducts: TProductCover[];
-};
-type TProductCover = {
-  _id: number;
-  productId: number;
-  orderCounts: number;
-};
+import {ActionShop} from '../realm/ActionShop';
+import {TProductCover} from '../utils/types';
 const _MainLayout = () => {
   const Tab = createMaterialTopTabNavigator();
   const [supportModal, setSupportModal] = React.useState<boolean>(false);
@@ -77,16 +68,7 @@ const _MainLayout = () => {
       async function getData() {
         const customer: string = await AsyncStorage.getItem('saba2token');
         setCustomerName(customer);
-
-        let realmDB = await new Realm({
-          schema: [FPList, ShopSchema, ProductCover],
-          path: 'SabaShopV2DB',
-        });
-        const the_shop: TShop[] = await realmDB.objects<TShop[]>('Shop');
-        if (the_shop) {
-          setOrdersNumber(the_shop[0]?.orderedProducts?.length);
-        }
-        realmDB.close();
+        ActionShop('sync', 0, 0, null, null, setOrdersNumber);
       }
       getData();
     }, []),

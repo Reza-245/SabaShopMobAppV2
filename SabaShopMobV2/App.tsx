@@ -36,7 +36,7 @@ import './utils/axiosDefaults';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from 'react-native-modal';
 import Login from './screens/Login';
-import PorductSelf from './screens/PorductSelf';
+import ProductSelf from './screens/ProductSelf';
 import {
   Colors,
   DebugInstructions,
@@ -44,6 +44,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import endpoints from './utils/endpoints.json';
 import _MainLayout from './layouts/MainLayout';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
@@ -51,15 +52,15 @@ import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs
 import Products from './screens/Products';
 import {ToastProvider} from 'react-native-toast-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+const MainWindow = Dimensions.get('window');
+
 const App = () => {
   try {
-    const Tab = createMaterialTopTabNavigator();
-    const [supportModal, setSupportModal] = React.useState<boolean | null>(
-      null,
-    );
     const [initRouteName, setInitRouteName] = React.useState<string | null>(
       null,
     );
+    const [isConnected, setIsConnected] = React.useState<boolean>(false);
     const images = [
       require('./assets/test1.jpg'),
       require('./assets/test2.jpg'),
@@ -67,6 +68,14 @@ const App = () => {
     const Stack = createStackNavigator();
 
     useEffect(() => {
+      setInterval(
+        async () =>
+          await axios
+            .get(endpoints.checkConnection)
+            .then(() => setIsConnected(true))
+            .catch(() => setIsConnected(false)),
+        3000,
+      );
       (async () => {
         const sabaShopV2Token = await AsyncStorage.getItem('saba2token');
         if (sabaShopV2Token) setInitRouteName('MAIN');
@@ -74,70 +83,53 @@ const App = () => {
       })();
     }, []);
     if (initRouteName === null) return null;
-    const MainWindow = Dimensions.get('window');
     return (
       <NavigationContainer>
-        <ToastProvider>
+        <ToastProvider offsetTop={50}>
           <SafeAreaView style={{height: MainWindow.height}}>
             <Stack.Navigator
               initialRouteName={initRouteName}
               screenOptions={{headerShown: false}}>
               <Stack.Screen name="MAIN" component={_MainLayout} />
-              <Stack.Screen name="PRODUCT_SELF" component={PorductSelf} />
+              <Stack.Screen name="PRODUCT_SELF" component={ProductSelf} />
               <Stack.Screen name="PRODUCTS" component={Products} />
               <Stack.Screen name="LOGIN" component={Login} />
             </Stack.Navigator>
           </SafeAreaView>
         </ToastProvider>
+        {!isConnected && (
+          <View style={styles.ConnectionErrorView}>
+            <Feather
+              name="wifi-off"
+              color={SabaColors.sabaLightRed}
+              size={200}
+            />
+            <Text style={styles.ConnectionErrorText}>درحال برقراری اتصال</Text>
+          </View>
+        )}
       </NavigationContainer>
     );
   } catch {}
 };
 const styles = StyleSheet.create({
-  MenuNavigatorView: {
-    backgroundColor: SabaColors.sabaGreen,
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row-reverse',
-  },
-  MenuNavigatorRightView: {
-    paddingLeft: 10,
-    height: '100%',
-    flexDirection: 'row-reverse',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flex: 1,
-  },
-  MenuNavigatorRightMenuView: {
-    flexDirection: 'row',
+  ConnectionErrorView: {
+    position: 'absolute',
+    backgroundColor: 'rgba(30,30,30,0.4)',
+    height: MainWindow.height,
+    width: MainWindow.width,
+    top: 0,
+    elevation: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  MenuNavigatorRightTitleView: {
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingRight: 10,
-  },
-  MenuNavigatorRightTitleText: {
-    fontSize: 13,
+  ConnectionErrorText: {
     fontFamily: 'shabnamMed',
-    color: '#fff',
-    textShadowRadius: 4,
-    textShadowColor: SabaColors.sabaGray,
-  },
-  MenuNavigatorRightTitleCustomerText: {
-    fontSize: 10,
-    fontFamily: 'shabnam',
-    color: '#fff',
-  },
-  MenuNavigatorLeftView: {
-    paddingHorizontal: 6,
-    height: '100%',
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    flexDirection: 'row-reverse',
+    marginTop: 20,
+    color: SabaColors.sabaRed,
+    backgroundColor: SabaColors.sabaLightRed,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
   },
 });
 

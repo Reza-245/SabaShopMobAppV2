@@ -38,7 +38,6 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import {useFocusEffect} from '@react-navigation/native';
-import {favoriteAction} from '../realm/RealmFPList';
 import {
   BallIndicator,
   BarIndicator,
@@ -53,35 +52,31 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {isEmpty} from 'lodash';
 import axios from 'axios';
+import {ActionFPList} from '../realm/ActionFPList';
+import {favDeleter} from '../utils/favoriteDeleter';
+import {TShop, TProductCover, TFavorite, TProductServer} from '../utils/types';
+
 const Favorite = () => {
   const navigate = useNavigation();
-  const [supportModal, setSupportModal] = React.useState<boolean>(false);
-  const [favorites, setFavorites] = React.useState([]);
-  const [favoritesPorduct, setFavoritesProduct] = React.useState([]);
+  const [favorites, setFavorites] = React.useState<number[]>([]);
+  const [favProducts, setFavProducts] = React.useState<TProductServer[]>();
   const [loading, setLoading] = React.useState<boolean>(true);
-
   useFocusEffect(
     React.useCallback(() => {
-      (async () => {
-        const favProducts = await favoriteAction(
-          'sync',
-          setFavorites,
-          0,
-          setLoading,
-        );
-        (async () =>
-          await axios
-            .post(endpoints.getFavorites, JSON.stringify({favs: favProducts}))
-            .then(({data, status}) => {
-              setFavoritesProduct(data);
-            }))();
-      })();
+      ActionFPList('sync', 0, setFavorites);
     }, []),
   );
+  React.useEffect(() => {
+    (async () =>
+      await axios
+        .post(endpoints.getFavorites, JSON.stringify({favs: favorites}))
+        .then(({data, status}) => setFavProducts(data))
+        .finally(() => setLoading(false)))();
+  }, [favorites]);
+
   async function handleDeleteFavorite(id: number) {
-    favoriteAction('delete', setFavorites, id);
-    const updated_favproducts = favoritesPorduct?.filter(pro => pro.id != id);
-    setFavoritesProduct(updated_favproducts);
+    ActionFPList('delete', id);
+    ActionFPList('sync', 0, setFavorites);
   }
   return (
     <View style={styles.favoriteView}>
@@ -98,7 +93,7 @@ const Favorite = () => {
             animationDuration={2900}
             size={48}
           />
-        ) : isEmpty(favorites) ? (
+        ) : isEmpty(favProducts) ? (
           <View style={styles.favoriteContentNoContentImageView}>
             <Image
               source={require('../assets/img/favorite/nofavorite.png')}
@@ -107,11 +102,11 @@ const Favorite = () => {
           </View>
         ) : (
           <ScrollView style={styles.favoriteContentView}>
-            {favoritesPorduct?.map((F, index) => (
+            {favProducts?.map((Fav, index) => (
               <TouchableOpacity
                 onPress={() =>
                   navigate.navigate('PRODUCT_SELF', {
-                    product: F,
+                    product: Fav,
                   })
                 }
                 key={index}
@@ -120,7 +115,7 @@ const Favorite = () => {
                 <View style={styles.favoriteContentItemNavView}>
                   <TouchableOpacity
                     activeOpacity={0.5}
-                    onPress={() => handleDeleteFavorite(F.id)}
+                    onPress={() => handleDeleteFavorite(Fav.id)}
                     style={styles.favoriteContentItemNavStatusView}>
                     <Ionicons
                       name="close"
@@ -137,19 +132,19 @@ const Favorite = () => {
                 <View style={styles.favoriteContentItemArticleView}>
                   <View style={styles.favoriteContentItemInfoView}>
                     <Text style={styles.favoriteContentItemInfoTitle}>
-                      {F.nam}
+                      {Fav.nam}
                     </Text>
                     <Text style={styles.favoriteContentItemInfoPrice}>
-                      قیمت نقدی {F.price} تومان
+                      قیمت نقدی {Fav.price} تومان
                     </Text>
                     <Text style={styles.favoriteContentItemInfoPrice}>
-                      قیمت چکی {F.pric} تومان
+                      قیمت چکی {Fav.price1} تومان
                     </Text>
                   </View>
                   <View style={styles.favoriteContentItemImageView}>
                     <Image
                       style={styles.favoriteContentItemImage}
-                      source={{uri: endpoints.URL + F.pic_path}}
+                      source={{uri: endpoints.URL + Fav.pic_path}}
                     />
                   </View>
                 </View>

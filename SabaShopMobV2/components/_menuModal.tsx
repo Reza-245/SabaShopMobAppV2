@@ -33,10 +33,14 @@ import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import {useToast} from 'react-native-toast-notifications';
-
+import {Linking} from 'react-native';
 const _menuModal = ({supportModal, setSupportModal}: any) => {
   const navigate = useNavigation();
   const toast = useToast();
+
+  const supportNumber = '09059147588';
+  const ManagerNumber = '09171081139';
+  const whatsAppNumber = '09059147588';
 
   async function logout() {
     await AsyncStorage.removeItem('saba2token');
@@ -45,7 +49,11 @@ const _menuModal = ({supportModal, setSupportModal}: any) => {
   }
   return (
     <Modal
-      animationIn="fadeInRight"
+      animationIn="fadeInRightBig"
+      animationOut="fadeOutRightBig"
+      animationInTiming={550}
+      animationOutTiming={550}
+      hideModalContentWhileAnimating={true}
       isVisible={supportModal}
       backdropOpacity={0}
       style={{
@@ -75,6 +83,7 @@ const _menuModal = ({supportModal, setSupportModal}: any) => {
           </View>
           <View style={styles.modalMenuNavbar}>
             <TouchableOpacity
+              onPress={() => Linking.openURL(`tel:${supportNumber}`)}
               style={{
                 ...styles.modalMenuNavbarItem,
                 backgroundColor: SabaColors.sabaIndigo,
@@ -82,20 +91,18 @@ const _menuModal = ({supportModal, setSupportModal}: any) => {
               <FontAwesome5 color="#fff" name="question" size={26} />
             </TouchableOpacity>
             <TouchableOpacity
+              onPress={() =>
+                Linking.openURL(`whatsapp://send?phone=${whatsAppNumber}`)
+              }
               style={{
                 ...styles.modalMenuNavbarItem,
                 backgroundColor: SabaColors.sabaGreen,
               }}>
               <FontAwesome color="#fff" name="whatsapp" size={30} />
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={{
-                ...styles.modalMenuNavbarItem,
-                backgroundColor: SabaColors.sabaBlack,
-              }}>
-              <Entypo color="#fff" name="folder" size={28} />
-            </TouchableOpacity>
-            <TouchableOpacity
+              onPress={() => Linking.openURL(`tel:${ManagerNumber}`)}
               style={{
                 ...styles.modalMenuNavbarItem,
                 backgroundColor: SabaColors.sabaGold,
@@ -131,7 +138,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: '#fff',
     height: '100%',
-    width: '70%',
+    width: '68%',
+    minWidth: 220,
     margin: 0,
     justifyContent: 'space-between',
     elevation: 15,

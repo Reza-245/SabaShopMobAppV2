@@ -11,9 +11,12 @@ class SUser(models.Model):
 
 
 class CustomerUser(models.Model): 
-    nam = models.CharField(max_length=200)
+    nam = models.CharField(max_length=50)
+    tel = models.CharField(max_length=11)
+    adr = models.CharField(max_length=150)
+    is_valid = models.BooleanField()
     class Meta:
-        db_table="tafseal"
+        db_table="webcast"
 
 
 

@@ -70,8 +70,8 @@ const App = () => {
   const [loading, setLoading] = React.useState<boolean>(false);
 
   function resetTimer() {
-    setCounter(45);
-    setSwitcher(!switcher);
+    setCounter(55);
+    setSwitcher(true);
   }
   useMemo(() => {
     if (counter != 0)
@@ -141,6 +141,7 @@ const App = () => {
         .finally(() => setLoading(false));
     } else {
       toast.show('کد وارد شده صحیح نیست', toastCustom().danger);
+      setLoading(false);
     }
   }
 
@@ -174,7 +175,7 @@ const App = () => {
             </View>
           </View>
         </View>
-        <KeyboardAvoidingView style={styles.loginContainer}>
+        <KeyboardAvoidingView behavior="position" style={styles.loginContainer}>
           <View style={styles.loginView}>
             <View style={styles.loginIconView}>
               <Image
@@ -315,6 +316,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: '40%',
     justifyContent: 'flex-start',
+    paddingLeft: 8,
   },
   loginNavigationImg: {
     height: '100%',

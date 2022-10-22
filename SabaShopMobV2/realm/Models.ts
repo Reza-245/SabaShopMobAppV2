@@ -1,5 +1,5 @@
-export const FPList = {
-  name: 'FPList',
+export const FPListSchema = {
+  name: 'FPListSchema',
   properties: {
     _id: 'int',
     pid: 'int',
@@ -7,20 +7,12 @@ export const FPList = {
   primaryKey: '_id',
 };
 
-export const ProductCover = {
-  name: 'ProductCover',
+export const ProductCoverSchema = {
+  name: 'ProductCoverSchema',
   properties: {
     _id: 'int',
     productId: 'int',
     orderCounts: 'int',
-  },
-};
-
-export const Shop = {
-  name: 'Shop',
-  properties: {
-    _id: 'int',
-    orderedProducts: 'ProductCover[]',
   },
   primaryKey: '_id',
 };

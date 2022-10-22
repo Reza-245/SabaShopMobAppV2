@@ -45,10 +45,15 @@ import {
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import axios from 'axios';
 import {debounce, isEmpty} from 'lodash';
-import {favoriteAction} from '../realm/RealmFPList';
+import {favoriteChacker} from '../utils/favoriteChecker';
+import {favDeleter} from '../utils/favoriteDeleter';
+import {ActionFPList} from '../realm/ActionFPList';
+import {MConverter} from '../utils/moneyConverter';
 
-const controller = new AbortController();
-const Products = () => {
+const Products = ({route}) => {
+  // const {cat1} = route.params;
+  // console.log('jaaaaasem', cat1);
+
   const [supportModal, setSupportModal] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [searching, setSearching] = React.useState<boolean>(false);
@@ -56,41 +61,44 @@ const Products = () => {
   const [favorites, setFavorites] = React.useState<any>();
   const [search, setSearch] = React.useState<string>();
 
-  async function handleFavorite(id: any) {
-    if (favorites.includes(id)) favoriteAction('delete', setFavorites, id);
-    else favoriteAction('create', setFavorites, id);
-  }
   const navigate = useNavigation();
   useFocusEffect(
     useCallback(() => {
-      (() =>
-        axios
-          .get(endpoints.getProducts, {signal: controller.signal})
+      let source = axios.CancelToken.source();
+      let AxiosConfigCancel = {cancelToken: source.token};
+      (async () =>
+        await axios
+          .get(
+            `${endpoints.getProducts}/${
+              route?.params?.cat1 ? route?.params?.cat1 : 0
+            }/0`,
+            AxiosConfigCancel,
+          )
           .then(({data, status}) => {
             setProducts(data);
-            favoriteAction('sync', setFavorites);
+            ActionFPList('sync', 0, setFavorites);
             setLoading(false);
           })
+          .catch(err => {})
           .finally(() => {}))();
 
-      return () => controller.abort();
+      return () => source.cancel();
     }, []),
   );
-  // useEffect(() => {
-  //   return () => console.log('88888888888888888888888888888888888');
-  // }, []);
-  const handleSearch = debounce(async (searchData: string) => {
-    setSearching(true);
-    await axios
-      .get(`${endpoints.getProducts}?q=${searchData?.replace(' ', '')}`, {
-        signal: controller.signal,
-      })
-      .then(({data, status}) => {
-        setProducts(data);
-        setSearching(false);
-      })
-      .catch(err => {});
-  }, 300);
+
+  const handleSearch = useCallback(
+    debounce(async (searchData: string) => {
+      setSearching(true);
+      await axios
+        .get(`${endpoints.getProducts}?q=${searchData?.replace(' ', '')}`)
+        .then(({data, status}) => {
+          setProducts(data);
+          setSearching(false);
+        })
+        .catch(err => {});
+    }, 350),
+    [],
+  );
 
   return (
     <View style={styles.productsView}>
@@ -120,7 +128,7 @@ const Products = () => {
           </View>
           {isEmpty(search) ? (
             <View style={styles.productsSearchIconView}>
-              <Feather size={27} name="search" color={SabaColors.sabaWhite} />
+              <Feather size={22} name="search" color={SabaColors.sabaWhite} />
             </View>
           ) : (
             <TouchableOpacity
@@ -184,15 +192,11 @@ const Products = () => {
               <View style={styles.productsContentItemNavView}>
                 <TouchableOpacity
                   activeOpacity={0.5}
-                  onPress={() => handleFavorite(item.id)}
+                  onPress={() => favDeleter(favorites, setFavorites, item.id)}
                   style={styles.productsContentItemNavStatusView}>
                   <AntDesign
-                    name={favorites?.includes(item.id) ? 'heart' : 'hearto'}
-                    color={
-                      favorites?.includes(item.id)
-                        ? SabaColors.sabaRed
-                        : SabaColors.sabaGray
-                    }
+                    name={favoriteChacker(favorites, item.id)}
+                    color={SabaColors.sabaRed}
                     size={17}
                   />
                 </TouchableOpacity>
@@ -208,18 +212,10 @@ const Products = () => {
                     {item.nam}
                   </Text>
                   <Text style={styles.productsContentItemInfoPrice}>
-                    قیمت نقدی{' '}
-                    {String(item.price).replace(
-                      /(\d)(?=(\d{3})+(?!\d))/g,
-                      '$1,',
-                    )}{' '}
+                    قیمت نقدی {MConverter(item.price)} تومان
                   </Text>
                   <Text style={styles.productsContentItemInfoPrice}>
-                    قیمت چکی{' '}
-                    {String(item.pric).replace(
-                      /(\d)(?=(\d{3})+(?!\d))/g,
-                      '$1,',
-                    )}{' '}
+                    قیمت چکی {MConverter(item.price1)} تومان
                   </Text>
                 </View>
                 <View style={styles.productsContentItemImageView}>
@@ -265,6 +261,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flex: 8,
+    paddingVertical: 7,
     flexDirection: 'row-reverse',
   },
   productsInputSearchView: {
@@ -272,9 +269,10 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     paddingHorizontal: 4,
     textAlign: 'right',
-    fontSize: 10,
+    fontSize: 13,
     fontFamily: 'shabnamMed',
     color: SabaColors.sabaWhite,
+    height: '100%',
   },
   indicatorView: {
     justifyContent: 'center',
@@ -360,7 +358,7 @@ const styles = StyleSheet.create({
   productsContentItemInfoTitle: {
     marginTop: 8,
     fontFamily: 'shabnamMed',
-    fontSize: 12,
+    fontSize: 15,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     marginVertical: 2,
@@ -369,7 +367,7 @@ const styles = StyleSheet.create({
   },
   productsContentItemInfoPrice: {
     fontFamily: 'shabnam',
-    fontSize: 11,
+    fontSize: 13,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     marginTop: 1,
@@ -381,7 +379,7 @@ const styles = StyleSheet.create({
     fontFamily: 'shabnamMed',
     fontSize: 13,
     textShadowColor: SabaColors.sabaGreen,
-    textShadowRadius: 9,
+    textShadowRadius: 3,
     color: SabaColors.sabaGreen,
   },
 });

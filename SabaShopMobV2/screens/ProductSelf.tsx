@@ -8,7 +8,7 @@
  * @format
  */
 
-import React, {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
   SafeAreaView,
@@ -41,10 +41,16 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import axios from 'axios';
-import {favoriteAction} from '../realm/RealmFPList';
 import {isEmpty} from 'lodash';
-import {shopAction} from '../realm/RealmShop';
 
+import {toastCustom} from '../utils/toastCustom';
+import {useToast} from 'react-native-toast-notifications';
+import {FPListSchema, ProductCoverSchema} from '../realm/Models';
+import {favDeleter} from '../utils/favoriteDeleter';
+import {favoriteChacker} from '../utils/favoriteChecker';
+import {ActionFPList} from '../realm/ActionFPList';
+import {MConverter} from '../utils/moneyConverter';
+import {ActionShop} from '../realm/ActionShop';
 type TShop = {
   _id: number;
   orderedProducts: string[];
@@ -54,63 +60,66 @@ type TProductCover = {
   productId: number;
   orderCounts: number;
 };
-const PorductSelf = ({route}: any) => {
+const ProductSelf = ({route}: any) => {
+  const toast = useToast();
   const {product} = route.params;
-  const [supportModal, setSupportModal] = React.useState<boolean>(false);
-  const [favorites, setFavorites] = React.useState();
-  const [similarProducts, setSimilarProducts] = React.useState();
-  const [order, setOrder] = React.useState<boolean>(false);
-  const [ordered, setOrdered] = React.useState<boolean>(false);
-  const [orderCount, setOrderCount] = React.useState<string>('0');
-  const [shop, setShop] = React.useState<TShop>();
+  const [supportModal, setSupportModal] = useState<boolean>(false);
+  const [favorites, setFavorites] = useState<number[]>();
+  const [products, setProducts] = useState<TProductCover[] | undefined>();
+  const [similarProducts, setSimilarProducts] = useState();
+  const [order, setOrder] = useState<boolean>(false);
+  const [ordered, setOrdered] = useState<boolean>(false);
+  const [orderCount, setOrderCount] = useState<string>('0');
+  const [shop, setShop] = useState<TShop>();
 
-  async function handleFavorite(id: any) {
-    if (favorites.includes(id)) favoriteAction('delete', setFavorites, id);
-    else favoriteAction('create', setFavorites, id);
-  }
   const navigate = useNavigation();
-  async function handleOrderCount() {
+  function handleOrderCount() {
     if (isEmpty(orderCount) || orderCount === '0') handleDiscardOrder();
+    // toast.show('کالا لغو شد', toastCustom().info);
     else {
-      await shopAction('create', () => {}, {
-        _id: parseInt(product.id),
-        productId: parseInt(product.id),
-        orderCounts: parseInt(orderCount),
-      });
+      if (orderCount > product.numb) {
+        ActionShop('create_update', product.id, parseInt(product.numb));
+        toast.show('کالا به اندازه موجودی ثبت شد', toastCustom().successInfo);
+        setOrderCount(String(product.numb));
+      } else {
+        toast.show('کالا ثبت شد', toastCustom().successInfo);
+        ActionShop('create_update', product.id, parseInt(orderCount));
+      }
       setOrdered(true);
       setOrder(true);
     }
   }
 
-  function hasOrdered(ordereds: TProductCover[]) {
-    const isExit = ordereds.find(pro => pro.productId == product.id);
-
-    if (isExit) {
-      const proCoverIndex: number = ordereds.findIndex(
-        pro => pro.productId == product.id,
-      );
-      setOrdered(true);
-      setOrder(true);
-      setOrderCount(String(ordereds[proCoverIndex].orderCounts));
+  function hasOrdered(ordereds: TProductCover[] | undefined) {
+    if (ordereds && !isEmpty(ordereds)) {
+      const isExit = ordereds.find(pro => pro.productId == product.id);
+      if (isExit) {
+        const proCoverIndex: number = ordereds.findIndex(
+          pro => pro.productId == product.id,
+        );
+        setOrdered(true);
+        setOrder(true);
+        setOrderCount(String(ordereds[proCoverIndex].orderCounts));
+      }
     }
   }
   function handleOrder() {
     setOrder(true);
     setOrderCount('1');
   }
+
+  useEffect(() => {}, []);
   async function handleDiscardOrder() {
-    await shopAction('delete', setShop, product.id);
+    ActionShop('delete', product.id);
     setOrdered(false);
     setOrder(false);
     setOrderCount('0');
+    toast.show('سفارش لغو شد', toastCustom().info);
   }
   useFocusEffect(
     useCallback(() => {
-      async function realmActions() {
-        await shopAction('sync', setShop, '', hasOrdered);
-        await favoriteAction('sync', setFavorites);
-      }
-      realmActions();
+      ActionFPList('sync', 0, setFavorites);
+      ActionShop('sync', 0, 0, setProducts, hasOrdered);
       (async () =>
         await axios
           .get(
@@ -143,10 +152,10 @@ const PorductSelf = ({route}: any) => {
         }
         headerRightComponent={
           <TouchableOpacity
-            onPress={() => handleFavorite(product.id)}
+            onPress={() => favDeleter(favorites, setFavorites, product.id)}
             activeOpacity={0.5}>
             <AntDesign
-              name={favorites?.includes(product.id) ? 'heart' : 'hearto'}
+              name={favoriteChacker(favorites, product.id)}
               color={SabaColors.sabaRed}
               size={26}
             />
@@ -186,14 +195,10 @@ const PorductSelf = ({route}: any) => {
           <View style={styles.productInfoContentView}>
             <Text style={styles.productInfoContentTitle}>{product.nam}</Text>
             <Text style={styles.productInfoContentPrice}>
-              قیمت نقدی{' '}
-              {String(product.price).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}{' '}
-              تومان
+              قیمت نقدی {MConverter(product.price)} تومان
             </Text>
             <Text style={styles.productInfoContentPrice}>
-              قیمت چکی{' '}
-              {String(product.pric).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}{' '}
-              تومان
+              قیمت چکی {MConverter(product.price1)} تومان
             </Text>
             <Text style={styles.productInfoContentExist}>
               موجودی:{product.numb} عدد
@@ -284,7 +289,10 @@ const PorductSelf = ({route}: any) => {
                   key={sim.id}
                   style={styles.similarProductItemView}>
                   <View style={styles.similarProductItemNavbar}>
-                    <TouchableOpacity onPress={() => handleFavorite(sim.id)}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        favDeleter(favorites, setFavorites, sim.id)
+                      }>
                       <AntDesign
                         name={favorites?.includes(sim.id) ? 'heart' : 'hearto'}
                         color={
@@ -313,20 +321,10 @@ const PorductSelf = ({route}: any) => {
                       {sim.nam}
                     </Text>
                     <Text style={styles.similarProductItemInfoPrice}>
-                      قیمت نقدی{' '}
-                      {String(product.price).replace(
-                        /(\d)(?=(\d{3})+(?!\d))/g,
-                        '$1,',
-                      )}{' '}
-                      تومان
+                      قیمت نقدی {MConverter(sim.price)} تومان
                     </Text>
                     <Text style={styles.similarProductItemInfoPrice}>
-                      قیمت چکی{' '}
-                      {String(product.pric).replace(
-                        /(\d)(?=(\d{3})+(?!\d))/g,
-                        '$1,',
-                      )}{' '}
-                      تومان
+                      قیمت چکی {MConverter(sim.price1)} تومان
                     </Text>
                     <Text style={styles.similarProductItemInfoExist}>
                       موجودی:{sim.numb} عدد
@@ -343,7 +341,7 @@ const PorductSelf = ({route}: any) => {
 };
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
-  selfPorductContainer: {},
+  selfProductSelf: {},
   productSelfView: {},
   productInfoView: {
     height: 204,
@@ -566,4 +564,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PorductSelf;
+export default ProductSelf;

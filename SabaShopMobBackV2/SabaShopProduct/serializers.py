@@ -9,7 +9,7 @@ from .models import Product,Order
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ("id","nam","unit","unit2","numb","pic_path","price","pric","box")
+        fields = ("id","nam","unit","unit2","numb","pic_path","price","price1","box")
 
     def create(self, validated_data):
         return super().create(validated_data)
@@ -49,6 +49,13 @@ class HistoryOrderSerializer(serializers.ModelSerializer):
         order["product"] = product.nam
         order["customer"] = customer.nam
         return order
+
+
+
+class FavSerializer(serializers.Serializer):
+    favs = serializers.CharField()
+    
+
 
 
 class OrderSerializer(serializers.ModelSerializer):

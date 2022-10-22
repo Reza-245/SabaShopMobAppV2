@@ -1,3 +1,4 @@
+import json
 import os
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -7,7 +8,7 @@ from django.db import connection
 from utils.numberConverter import numberConverter
 from utils.unicodeConverter import unicodeConverter
 from .models import Order, Product
-from .serializers import ProductImageSerializer, ProductSerializer,OrderSerializer,HistoryOrderSerializer
+from .serializers import FavSerializer, ProductImageSerializer, ProductSerializer,OrderSerializer,HistoryOrderSerializer
 # Create your views here.
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -78,8 +79,6 @@ def getProductBarcode(request):
     q = request.GET.get("q")
     # products = Product.objects.filter(barcod__exact=q).all()[:100]
     Englishlized_number = numberConverter(q)
-    print(q)
-    print(Englishlized_number)
     products = Product.objects.raw(f"exec queries @st=3,@barcod={Englishlized_number}")
     PSER = ProductSerializer(products,many=True)
     return Response(PSER.data,status=status.HTTP_200_OK)
@@ -100,6 +99,54 @@ def getHistoryOrder(request):
         return Response(HSER.data,status=status.HTTP_200_OK)
     else:
         return Response([],status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def getFavorites(request): 
+    FSER = FavSerializer(data=request.data)
+    FSER.is_valid()
+    favsList = FSER.data.get("favs")
+    products = []
+    for fav in favsList:
+        product = Product.objects.filter(id=fav,numb__gt=0).first()
+        if product:
+            products.append(product) 
+    return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
+
+
+
+@api_view(["POST"])
+def getShopProducts(request): 
+    FSER = FavSerializer(data=request.data)
+    FSER.is_valid()
+    favsList = FSER.data.get("favs")
+    products = []
+    for fav in favsList:
+        product = Product.objects.filter(id=fav,numb__gt=0).first()
+        if product:
+            products.append(product) 
+    return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+def getSimilarProducts(request,distinctId): 
+    products = Product.objects.filter(nam__contains=request.GET.get("similar"),numb__gt=0).exclude(id=distinctId).all()[:5]
+    return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def getNewestProducts(request): 
+    products = Product.objects.order_by("-id").filter(numb__gt=0).all()[:5]
+    return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
+
+
+
+@api_view(["GET"])
+def getFirstProducts(request): 
+    products = Product.objects.order_by("id").filter(numb__gt=0).all()[:5]
+    return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
+
+
+
+
 
 
 

@@ -11,7 +11,7 @@ export function toastCustom() {
     success: {
       type: 'success',
       placement: 'top',
-      duration: 3000,
+      duration: 1400,
       animationType: 'zoom-in',
       // icon: <Feather name="check-circle" size={23} color="#2eff00" />,
       textStyle: {
@@ -28,7 +28,7 @@ export function toastCustom() {
     successInfo: {
       type: 'success',
       placement: 'top',
-      duration: 12000,
+      duration: 1400,
       animationType: 'zoom-in',
 
       textStyle: {
@@ -44,7 +44,7 @@ export function toastCustom() {
     warning: {
       type: 'warning',
       placement: 'top',
-      duration: 3000,
+      duration: 1400,
       animationType: 'slide-in',
       icon: <AntDesign name="warning" size={26} color="#ff9e00" />,
       textStyle: {
@@ -60,7 +60,7 @@ export function toastCustom() {
     danger: {
       type: 'danger',
       placement: 'top',
-      duration: 3000,
+      duration: 1400,
       animationType: 'slide-in',
       icon: <MaterialIcons name="dangerous" size={26} color="red" />,
       textStyle: {
@@ -76,7 +76,7 @@ export function toastCustom() {
     info: {
       type: 'normal',
       placement: 'top',
-      duration: 3000,
+      duration: 1400,
       animationType: 'slide-in',
       icon: <FontAwesome5 name="info-circle" size={26} color="#fff" />,
       textStyle: {
@@ -89,7 +89,7 @@ export function toastCustom() {
     info: {
       type: 'normal',
       placement: 'top',
-      duration: 8000,
+      duration: 1400,
       animationType: 'slide-in',
       textStyle: {
         fontFamily: 'shabnam',
@@ -113,7 +113,7 @@ export function toastCustom() {
     custom: {
       type: 'custom',
       placement: 'top',
-      duration: 3000,
+      duration: 1400,
       animationType: 'slide-in',
       icon: <ActivityIndicator size={35} color="#fff" />,
       textStyle: {

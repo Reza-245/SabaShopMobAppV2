@@ -46,41 +46,51 @@ const axios = require('axios').default;
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 
 import {FlatList} from 'react-native-gesture-handler';
-import {favoriteAction} from '../realm/RealmFPList';
-const controller = new AbortController();
+import {ActionFPList} from '../realm/ActionFPList';
+import {favoriteChacker} from '../utils/favoriteChecker';
+import {favDeleter} from '../utils/favoriteDeleter';
+import {MConverter} from '../utils/moneyConverter';
+
 const Home = () => {
   const [supportModal, setSupportModal] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
   const navigate = useNavigation();
   const [products, setProducts] = React.useState();
   const [lastProducts, setLastProducts] = React.useState();
-  const [favorites, setFavorites] = React.useState();
-  async function handleFavorite(id: any) {
-    if (favorites.includes(id)) favoriteAction('delete', setFavorites, id);
-    else favoriteAction('create', setFavorites, id);
-  }
+  const [categories, setCategories] = React.useState<any>();
+  const [favorites, setFavorites] = React.useState<number[]>();
 
   useFocusEffect(
     React.useCallback(() => {
+      let source = axios.CancelToken.source();
+      let AxiosConfigCancel = {cancelToken: source.token};
+      ActionFPList('sync', 0, setFavorites);
       (async () => {
         await axios
-          .get(endpoints.getNewestProducts, {
-            signal: controller.signal,
-          })
+          .get(endpoints.getNewestProducts, AxiosConfigCancel)
           .then(async ({data, status}: any) => {
             setLastProducts(data);
             await axios
-              .get(endpoints.getFirstProducts, {
-                signal: controller.signal,
-              })
+              .get(endpoints.getFirstProducts, AxiosConfigCancel)
               .then(async ({data, status}: any) => {
                 setProducts(data);
-                favoriteAction('sync', setFavorites, 0, setLoading);
-              });
+                // favoriteAction('sync', setFavorites, 0, setLoading);
+                await axios
+                  .get(endpoints.getCategory1, AxiosConfigCancel)
+                  .then(({data}) => {
+                    setCategories(data);
+                  })
+                  .catch(() => {});
+              })
+              .catch(() => {});
+          })
+          .catch(() => {})
+          .finally(() => {
+            setLoading(false);
           });
       })();
 
-      return () => controller.abort();
+      return () => source.cancel();
     }, []),
   );
 
@@ -100,111 +110,23 @@ const Home = () => {
             />
           ) : (
             <ScrollView horizontal={true}>
-              <TouchableOpacity
-                onPress={() => navigate.navigate('PRODUCTS')}
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/suit.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>لباس</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/shoe.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>کفش</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/cup.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>لیوان</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/food.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>غذا</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/suit.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>لباس</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/shoe.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>کفش</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/cup.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>لیوان</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.HomeMenuItemView}>
-                <View style={styles.HomeMenuItemImageView}>
-                  <Image
-                    style={styles.HomeMenuItemImage}
-                    source={require('../assets/img/home/food.png')}
-                  />
-                </View>
-                <View style={styles.HomeMenuItemImageTitleView}>
-                  <Text style={styles.HomeMenuItemImageTitle}>غذا</Text>
-                </View>
-              </TouchableOpacity>
+              {categories?.map(cat => (
+                <TouchableOpacity
+                  key={cat.id}
+                  onPress={() => navigate.navigate('PRODUCTS', {cat1: cat.id})}
+                  activeOpacity={0.5}
+                  style={styles.HomeMenuItemView}>
+                  <View style={styles.HomeMenuItemImageView}>
+                    <Image
+                      style={styles.HomeMenuItemImage}
+                      source={require('../assets/img/home/suit.png')}
+                    />
+                  </View>
+                  <View style={styles.HomeMenuItemImageTitleView}>
+                    <Text style={styles.HomeMenuItemImageTitle}>{cat.nam}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           )}
         </View>
@@ -252,18 +174,14 @@ const Home = () => {
                       style={styles.HomeContentNewItemView}>
                       <View style={styles.HomeContentNewItemNavbarView}>
                         <TouchableOpacity
-                          onPress={() => handleFavorite(item.id)}
+                          onPress={() =>
+                            favDeleter(favorites, setFavorites, item.id)
+                          }
                           style={styles.HomeContentNewItemNavbarRightView}>
                           <AntDesign
-                            name={
-                              favorites?.includes(item.id) ? 'heart' : 'hearto'
-                            }
+                            name={favoriteChacker(favorites, item.id)}
                             size={20}
-                            color={
-                              favorites?.includes(item.id)
-                                ? SabaColors.sabaRed
-                                : SabaColors.sabaGray
-                            }
+                            color={SabaColors.sabaRed}
                           />
                         </TouchableOpacity>
                         <View style={styles.HomeContentNewItemNavbarLeftView}>
@@ -293,20 +211,10 @@ const Home = () => {
                           {item.nam}
                         </Text>
                         <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت نقدی{' '}
-                          {String(item.price).replace(
-                            /(\d)(?=(\d{3})+(?!\d))/g,
-                            '$1,',
-                          )}{' '}
-                          تومان
+                          قیمت نقدی {MConverter(item.price)} تومان
                         </Text>
                         <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت چکی{' '}
-                          {String(item.pric).replace(
-                            /(\d)(?=(\d{3})+(?!\d))/g,
-                            '$1,',
-                          )}{' '}
-                          تومان
+                          قیمت چکی {MConverter(item.price1)} تومان
                         </Text>
                         <Text style={styles.HomeContentNewItemInfoExist}>
                           موجودی: {item.numb}عدد
@@ -361,18 +269,14 @@ const Home = () => {
                       style={styles.HomeContentNewItemView}>
                       <View style={styles.HomeContentNewItemNavbarView}>
                         <TouchableOpacity
-                          onPress={() => handleFavorite(item.id)}
+                          onPress={() =>
+                            favDeleter(favorites, setFavorites, item.id)
+                          }
                           style={styles.HomeContentNewItemNavbarRightView}>
                           <AntDesign
-                            name={
-                              favorites?.includes(item.id) ? 'heart' : 'hearto'
-                            }
+                            name={favoriteChacker(favorites, item.id)}
                             size={20}
-                            color={
-                              favorites?.includes(item.id)
-                                ? SabaColors.sabaRed
-                                : SabaColors.sabaGray
-                            }
+                            color={SabaColors.sabaRed}
                           />
                         </TouchableOpacity>
                         <View style={styles.HomeContentNewItemNavbarLeftView}>
@@ -402,20 +306,10 @@ const Home = () => {
                           {item.nam}
                         </Text>
                         <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت نقدی{' '}
-                          {String(item.price).replace(
-                            /(\d)(?=(\d{3})+(?!\d))/g,
-                            '$1,',
-                          )}{' '}
-                          تومان
+                          قیمت نقدی {MConverter(item.price)} تومان
                         </Text>
                         <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت چکی{' '}
-                          {String(item.pric).replace(
-                            /(\d)(?=(\d{3})+(?!\d))/g,
-                            '$1,',
-                          )}{' '}
-                          تومان
+                          قیمت چکی {MConverter(item.price1)} تومان
                         </Text>
                         <Text style={styles.HomeContentNewItemInfoExist}>
                           موجودی: {item.numb}عدد
@@ -599,7 +493,7 @@ const styles = StyleSheet.create({
   },
   HomeContentNewItemInfoTitle: {
     fontFamily: 'shabnamMed',
-    fontSize: 12,
+    fontSize: 14,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaBlack,
@@ -607,7 +501,7 @@ const styles = StyleSheet.create({
   },
   HomeContentNewItemInfoPrice: {
     fontFamily: 'shabnam',
-    fontSize: 11,
+    fontSize: 12,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaDarkGary,
@@ -618,7 +512,7 @@ const styles = StyleSheet.create({
     fontFamily: 'shabnamMed',
     fontSize: 12,
     textShadowColor: SabaColors.sabaGreen,
-    textShadowRadius: 4,
+    textShadowRadius: 2,
     color: SabaColors.sabaGreen,
   },
 });
