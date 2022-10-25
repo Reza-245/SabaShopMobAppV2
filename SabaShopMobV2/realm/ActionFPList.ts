@@ -1,9 +1,6 @@
-import axios from 'axios';
 import Realm from 'realm';
 import {FPListSchema, ProductCoverSchema} from './Models';
-import endpoints from '../utils/endpoints.json';
-import {TShop, TProductCover, TFavorite} from '../utils/types';
-
+import {TFavorite} from '../utils/types';
 export async function ActionFPList(
   actionType: string,
   id: number = 0,
@@ -35,7 +32,6 @@ export async function ActionFPList(
         );
         break;
     }
-
     // realm.close();
   } catch (error) {
     console.log(`error from FPList `, error);

@@ -1,9 +1,6 @@
-import axios from 'axios';
 import Realm from 'realm';
 import {FPListSchema, ProductCoverSchema} from './Models';
-import endpoints from '../utils/endpoints.json';
-import {TShop, TProductCover, TFavorite} from '../utils/types';
-
+import {TProductCover} from '../utils/types';
 export function ActionShop(
   type: string,
   id: number = 0,
@@ -18,7 +15,6 @@ export function ActionShop(
       path: 'SabaShopV2DB',
       schema: [ProductCoverSchema, FPListSchema],
     });
-
     switch (type) {
       case 'sync':
         const productCovers: TProductCover[] | any =
@@ -52,7 +48,6 @@ export function ActionShop(
         });
         break;
     }
-
     // realm.close();
   } catch (error) {
     console.log('Error From Shop ', error);

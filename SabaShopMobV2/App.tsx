@@ -1,72 +1,28 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
  * @format
  */
-
-import React, {useEffect} from 'react';
-import SabaColors from './utils/SabaColors.json';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-  Dimensions,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Button,
-} from 'react-native';
-import {ImageSlider} from 'react-native-image-slider-banner';
-import MenuModal from './components/_menuModal';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Fontisto from 'react-native-vector-icons/Fontisto';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Feather from 'react-native-vector-icons/Feather';
+import {useEffect, useState} from 'react';
+import {SafeAreaView, StatusBar, Dimensions, I18nManager} from 'react-native';
 import './utils/axiosDefaults';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Modal from 'react-native-modal';
 import Login from './screens/Login';
 import ProductSelf from './screens/ProductSelf';
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 import endpoints from './utils/endpoints.json';
 import _MainLayout from './layouts/MainLayout';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
-import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Products from './screens/Products';
 import {ToastProvider} from 'react-native-toast-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-const MainWindow = Dimensions.get('window');
-
+import ErrorConnectionLayout from './layouts/ErrorConnectionLayout';
+import ErrorLayout from './layouts/ErrorLayout';
+const MainWindow = Dimensions.get('screen');
 const App = () => {
+  I18nManager.allowRTL(false);
   try {
-    const [initRouteName, setInitRouteName] = React.useState<string | null>(
-      null,
-    );
-    const [isConnected, setIsConnected] = React.useState<boolean>(false);
-    const images = [
-      require('./assets/test1.jpg'),
-      require('./assets/test2.jpg'),
-    ];
+    const [initRouteName, setInitRouteName] = useState<string | null>(null);
+    const [isConnected, setIsConnected] = useState<boolean>(true);
     const Stack = createStackNavigator();
-
     useEffect(() => {
       setInterval(
         async () =>
@@ -84,9 +40,10 @@ const App = () => {
     }, []);
     if (initRouteName === null) return null;
     return (
-      <NavigationContainer>
-        <ToastProvider offsetTop={50}>
-          <SafeAreaView style={{height: MainWindow.height}}>
+      <SafeAreaView
+        style={{height: MainWindow.height - StatusBar.currentHeight}}>
+        <NavigationContainer>
+          <ToastProvider offsetTop={50}>
             <Stack.Navigator
               initialRouteName={initRouteName}
               screenOptions={{headerShown: false}}>
@@ -95,42 +52,13 @@ const App = () => {
               <Stack.Screen name="PRODUCTS" component={Products} />
               <Stack.Screen name="LOGIN" component={Login} />
             </Stack.Navigator>
-          </SafeAreaView>
-        </ToastProvider>
-        {!isConnected && (
-          <View style={styles.ConnectionErrorView}>
-            <Feather
-              name="wifi-off"
-              color={SabaColors.sabaLightRed}
-              size={200}
-            />
-            <Text style={styles.ConnectionErrorText}>درحال برقراری اتصال</Text>
-          </View>
-        )}
-      </NavigationContainer>
+          </ToastProvider>
+          {!isConnected && <ErrorConnectionLayout />}
+        </NavigationContainer>
+      </SafeAreaView>
     );
-  } catch {}
+  } catch (err: any) {
+    return <ErrorLayout pageError="App" errorDes={err.message} />;
+  }
 };
-const styles = StyleSheet.create({
-  ConnectionErrorView: {
-    position: 'absolute',
-    backgroundColor: 'rgba(30,30,30,0.4)',
-    height: MainWindow.height,
-    width: MainWindow.width,
-    top: 0,
-    elevation: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ConnectionErrorText: {
-    fontFamily: 'shabnamMed',
-    marginTop: 20,
-    color: SabaColors.sabaRed,
-    backgroundColor: SabaColors.sabaLightRed,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
-  },
-});
-
 export default App;

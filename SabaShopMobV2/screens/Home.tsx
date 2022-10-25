@@ -1,330 +1,329 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
-import React from 'react';
+import {useState, useCallback} from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
-  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   Dimensions,
   Image,
-  TextInput,
   TouchableOpacity,
-  Button,
 } from 'react-native';
 import endpoints from '../utils/endpoints.json';
-import MenuModal from '../components/_menuModal';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Entypo from 'react-native-vector-icons/Entypo';
-import {
-  BallIndicator,
-  BarIndicator,
-  DotIndicator,
-  MaterialIndicator,
-  PacmanIndicator,
-  PulseIndicator,
-  SkypeIndicator,
-  UIActivityIndicator,
-  WaveIndicator,
-} from 'react-native-indicators';
-
-import Modal from 'react-native-modal';
+import {BarIndicator, MaterialIndicator} from 'react-native-indicators';
 const axios = require('axios').default;
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-
-import {FlatList} from 'react-native-gesture-handler';
+import _ErrorLayout from '../layouts/ErrorLayout';
 import {ActionFPList} from '../realm/ActionFPList';
 import {favoriteChacker} from '../utils/favoriteChecker';
 import {favDeleter} from '../utils/favoriteDeleter';
 import {MConverter} from '../utils/moneyConverter';
-
+import {substringMaker} from '../utils/substringMaker';
+import {isEmpty} from 'lodash';
 const Home = () => {
-  const [supportModal, setSupportModal] = React.useState<boolean>(false);
-  const [loading, setLoading] = React.useState<boolean>(true);
-  const navigate = useNavigation();
-  const [products, setProducts] = React.useState();
-  const [lastProducts, setLastProducts] = React.useState();
-  const [categories, setCategories] = React.useState<any>();
-  const [favorites, setFavorites] = React.useState<number[]>();
+  try {
+    const [loading, setLoading] = useState<boolean>(true);
+    const navigate = useNavigation();
+    const [products, setProducts] = useState();
+    const [lastProducts, setLastProducts] = useState();
+    const [categories, setCategories] = useState<any>();
+    const [favorites, setFavorites] = useState<number[]>();
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let source = axios.CancelToken.source();
-      let AxiosConfigCancel = {cancelToken: source.token};
-      ActionFPList('sync', 0, setFavorites);
-      (async () => {
-        await axios
-          .get(endpoints.getNewestProducts, AxiosConfigCancel)
-          .then(async ({data, status}: any) => {
-            setLastProducts(data);
-            await axios
-              .get(endpoints.getFirstProducts, AxiosConfigCancel)
-              .then(async ({data, status}: any) => {
-                setProducts(data);
-                // favoriteAction('sync', setFavorites, 0, setLoading);
-                await axios
-                  .get(endpoints.getCategory1, AxiosConfigCancel)
-                  .then(({data}) => {
-                    setCategories(data);
-                  })
-                  .catch(() => {});
-              })
-              .catch(() => {});
-          })
-          .catch(() => {})
-          .finally(() => {
-            setLoading(false);
-          });
-      })();
+    useFocusEffect(
+      useCallback(() => {
+        let source = axios.CancelToken.source();
+        let AxiosConfigCancel = {cancelToken: source.token};
+        ActionFPList('sync', 0, setFavorites);
+        (async () => {
+          await axios
+            .get(endpoints.getNewestProducts, AxiosConfigCancel)
+            .then(async ({data}: any) => {
+              setLastProducts(data);
+              await axios
+                .get(endpoints.getFirstProducts, AxiosConfigCancel)
+                .then(async ({data}: any) => {
+                  setProducts(data);
+                  await axios
+                    .get(endpoints.getCategory1, AxiosConfigCancel)
+                    .then(({data}: any) => {
+                      setCategories(data);
+                    })
+                    .catch(() => {});
+                })
+                .catch(() => {});
+            })
+            .catch(() => {})
+            .finally(() => {
+              setLoading(false);
+            });
+        })();
 
-      return () => source.cancel();
-    }, []),
-  );
+        return () => source.cancel();
+      }, []),
+    );
 
-  return (
-    <View style={styles.HomeView}>
-      <View style={styles.HomeMenuView}>
-        <View style={styles.HomeMenuTextView}>
-          <Text style={styles.HomeMenuText}>دسته بندی ها</Text>
-        </View>
-
-        <View style={styles.HomeMenuItemsView}>
-          {loading ? (
-            <MaterialIndicator
-              color={SabaColors.sabaGreen}
-              animationDuration={2900}
-              size={28}
-            />
-          ) : (
-            <ScrollView horizontal={true}>
-              {categories?.map(cat => (
-                <TouchableOpacity
-                  key={cat.id}
-                  onPress={() => navigate.navigate('PRODUCTS', {cat1: cat.id})}
-                  activeOpacity={0.5}
-                  style={styles.HomeMenuItemView}>
-                  <View style={styles.HomeMenuItemImageView}>
-                    <Image
-                      style={styles.HomeMenuItemImage}
-                      source={require('../assets/img/home/suit.png')}
-                    />
-                  </View>
-                  <View style={styles.HomeMenuItemImageTitleView}>
-                    <Text style={styles.HomeMenuItemImageTitle}>{cat.nam}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-      </View>
-      <View style={styles.HomeContentConatiner}>
-        <View style={styles.HomeContentNewView}>
-          <View style={styles.HomeContentNewTitleView}>
-            <View style={styles.HomeContentNewTitleRightView}>
-              <Text style={styles.HomeContentNewTitleRightText}>
-                جدید ترین ها
-              </Text>
-            </View>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => navigate.navigate('PRODUCTS')}
-              style={styles.HomeContentNewTitleLeftView}>
-              <Text style={styles.HomeContentNewTitleLeftText}>مشاهده همه</Text>
-              <MaterialIcons
-                name="arrow-back-ios"
-                color={SabaColors.sabaDarkGary}
-                size={13}
-              />
-            </TouchableOpacity>
+    return (
+      <View style={styles.HomeView}>
+        <View style={styles.HomeMenuView}>
+          <View style={styles.HomeMenuTextView}>
+            <Text style={styles.HomeMenuText}>دسته بندی ها</Text>
           </View>
-          <View style={styles.HomeContentNewItemsContainerView}>
+
+          <View style={styles.HomeMenuItemsView}>
             {loading ? (
-              <View style={styles.HomeContentNewItemsIndicatorView}>
-                <BarIndicator
-                  animationDuration={700}
-                  size={40}
-                  color={SabaColors.sabaGreen}
-                  count={5}
-                />
-              </View>
+              <MaterialIndicator
+                color={SabaColors.sabaGreen}
+                animationDuration={2900}
+                size={28}
+              />
             ) : (
-              <View style={styles.HomeContentNewItemsView}>
-                <ScrollView horizontal={true}>
-                  {lastProducts?.map(item => (
-                    <TouchableOpacity
-                      key={item.id}
-                      activeOpacity={0.9}
-                      onPress={() =>
-                        navigate.navigate('PRODUCT_SELF', {product: item})
-                      }
-                      style={styles.HomeContentNewItemView}>
-                      <View style={styles.HomeContentNewItemNavbarView}>
-                        <TouchableOpacity
-                          onPress={() =>
-                            favDeleter(favorites, setFavorites, item.id)
-                          }
-                          style={styles.HomeContentNewItemNavbarRightView}>
-                          <AntDesign
-                            name={favoriteChacker(favorites, item.id)}
-                            size={20}
-                            color={SabaColors.sabaRed}
-                          />
-                        </TouchableOpacity>
-                        <View style={styles.HomeContentNewItemNavbarLeftView}>
-                          <View
-                            style={
-                              styles.HomeContentNewItemNavbarLeftExistView
-                            }>
-                            <Text
-                              style={
-                                styles.HomeContentNewItemNavbarLeftExistText
-                              }>
-                              موجود
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                      <View style={styles.HomeContentNewItemImageContainerView}>
-                        <View style={styles.HomeContentNewItemImageView}>
-                          <Image
-                            style={styles.HomeContentNewItemImage}
-                            source={{uri: endpoints.URL + item.pic_path}}
-                          />
-                        </View>
-                      </View>
-                      <View style={styles.HomeContentNewItemInfoView}>
-                        <Text style={styles.HomeContentNewItemInfoTitle}>
-                          {item.nam}
-                        </Text>
-                        <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت نقدی {MConverter(item.price)} تومان
-                        </Text>
-                        <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت چکی {MConverter(item.price1)} تومان
-                        </Text>
-                        <Text style={styles.HomeContentNewItemInfoExist}>
-                          موجودی: {item.numb}عدد
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+              <ScrollView horizontal={true}>
+                {categories?.map(cat => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    onPress={() =>
+                      navigate.navigate('PRODUCTS', {cat1: cat.id})
+                    }
+                    activeOpacity={0.5}
+                    style={styles.HomeMenuItemView}>
+                    <View style={styles.HomeMenuItemImageView}>
+                      <Image
+                        style={styles.HomeMenuItemImage}
+                        source={require('../assets/img/home/suit.png')}
+                      />
+                    </View>
+                    <View style={styles.HomeMenuItemImageTitleView}>
+                      <Text style={styles.HomeMenuItemImageTitle}>
+                        {substringMaker(cat.nam, 7)}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             )}
           </View>
         </View>
-        <View style={styles.HomeContentNewView}>
-          <View style={styles.HomeContentNewTitleView}>
-            <View style={styles.HomeContentNewTitleRightView}>
-              <Text style={styles.HomeContentNewTitleRightText}>
-                همه محصولات
-              </Text>
-            </View>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => navigate.navigate('PRODUCTS')}
-              style={styles.HomeContentNewTitleLeftView}>
-              <Text style={styles.HomeContentNewTitleLeftText}>مشاهده همه</Text>
-              <MaterialIcons
-                name="arrow-back-ios"
-                color={SabaColors.sabaDarkGary}
-                size={13}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.HomeContentNewItemsContainerView}>
-            {loading ? (
-              <View style={styles.HomeContentNewItemsIndicatorView}>
-                <BarIndicator
-                  animationDuration={700}
-                  size={40}
-                  color={SabaColors.sabaGreen}
-                  count={5}
-                />
+        <View style={styles.HomeContentConatiner}>
+          <View style={styles.HomeContentNewView}>
+            <View style={styles.HomeContentNewTitleView}>
+              <View style={styles.HomeContentNewTitleRightView}>
+                <Text style={styles.HomeContentNewTitleRightText}>
+                  جدید ترین ها
+                </Text>
               </View>
-            ) : (
-              <View style={styles.HomeContentNewItemsView}>
-                <ScrollView horizontal={true}>
-                  {products?.map(item => (
-                    <TouchableOpacity
-                      key={item.id}
-                      activeOpacity={0.9}
-                      onPress={() =>
-                        navigate.navigate('PRODUCT_SELF', {product: item})
-                      }
-                      style={styles.HomeContentNewItemView}>
-                      <View style={styles.HomeContentNewItemNavbarView}>
-                        <TouchableOpacity
-                          onPress={() =>
-                            favDeleter(favorites, setFavorites, item.id)
-                          }
-                          style={styles.HomeContentNewItemNavbarRightView}>
-                          <AntDesign
-                            name={favoriteChacker(favorites, item.id)}
-                            size={20}
-                            color={SabaColors.sabaRed}
-                          />
-                        </TouchableOpacity>
-                        <View style={styles.HomeContentNewItemNavbarLeftView}>
-                          <View
-                            style={
-                              styles.HomeContentNewItemNavbarLeftExistView
-                            }>
-                            <Text
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={() => navigate.navigate('PRODUCTS')}
+                style={styles.HomeContentNewTitleLeftView}>
+                <Text style={styles.HomeContentNewTitleLeftText}>
+                  مشاهده همه
+                </Text>
+                <MaterialIcons
+                  name="arrow-back-ios"
+                  color={SabaColors.sabaDarkGary}
+                  size={13}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.HomeContentNewItemsContainerView}>
+              {loading ? (
+                <View style={styles.HomeContentNewItemsIndicatorView}>
+                  <BarIndicator
+                    animationDuration={700}
+                    size={40}
+                    color={SabaColors.sabaGreen}
+                    count={5}
+                  />
+                </View>
+              ) : (
+                <View style={styles.HomeContentNewItemsView}>
+                  <ScrollView horizontal={true}>
+                    {lastProducts?.map(item => (
+                      <TouchableOpacity
+                        key={item.id}
+                        activeOpacity={0.9}
+                        onPress={() =>
+                          navigate.navigate('PRODUCT_SELF', {product: item})
+                        }
+                        style={styles.HomeContentNewItemView}>
+                        <View style={styles.HomeContentNewItemNavbarView}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              favDeleter(favorites, setFavorites, item.id)
+                            }
+                            style={styles.HomeContentNewItemNavbarRightView}>
+                            <AntDesign
+                              name={favoriteChacker(favorites, item.id)}
+                              size={20}
+                              color={SabaColors.sabaRed}
+                            />
+                          </TouchableOpacity>
+                          <View style={styles.HomeContentNewItemNavbarLeftView}>
+                            <View
                               style={
-                                styles.HomeContentNewItemNavbarLeftExistText
+                                styles.HomeContentNewItemNavbarLeftExistView
                               }>
-                              موجود
-                            </Text>
+                              <Text
+                                style={
+                                  styles.HomeContentNewItemNavbarLeftExistText
+                                }>
+                                موجود
+                              </Text>
+                            </View>
                           </View>
                         </View>
-                      </View>
-                      <View style={styles.HomeContentNewItemImageContainerView}>
-                        <View style={styles.HomeContentNewItemImageView}>
-                          <Image
-                            style={styles.HomeContentNewItemImage}
-                            source={{uri: endpoints.URL + item.pic_path}}
-                          />
+                        <View
+                          style={styles.HomeContentNewItemImageContainerView}>
+                          {!isEmpty(item.pic_path) ? (
+                            <Image
+                              style={styles.HomeContentNewItemImage}
+                              source={{uri: endpoints.URL + item.pic_path}}
+                            />
+                          ) : (
+                            <Image
+                              style={{
+                                ...styles.HomeContentNewItemImage,
+                                opacity: 0.6,
+                              }}
+                              source={require('../assets/img/noneimage.png')}
+                            />
+                          )}
                         </View>
-                      </View>
-                      <View style={styles.HomeContentNewItemInfoView}>
-                        <Text style={styles.HomeContentNewItemInfoTitle}>
-                          {item.nam}
-                        </Text>
-                        <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت نقدی {MConverter(item.price)} تومان
-                        </Text>
-                        <Text style={styles.HomeContentNewItemInfoPrice}>
-                          قیمت چکی {MConverter(item.price1)} تومان
-                        </Text>
-                        <Text style={styles.HomeContentNewItemInfoExist}>
-                          موجودی: {item.numb}عدد
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                        <View style={styles.HomeContentNewItemInfoView}>
+                          <Text style={styles.HomeContentNewItemInfoTitle}>
+                            {substringMaker(item.nam, 14)}
+                          </Text>
+                          <Text style={styles.HomeContentNewItemInfoPrice}>
+                            قیمت نقدی {MConverter(item.price)} تومان
+                          </Text>
+                          <Text style={styles.HomeContentNewItemInfoPrice}>
+                            قیمت چکی {MConverter(item.price1)} تومان
+                          </Text>
+                          <Text style={styles.HomeContentNewItemInfoExist}>
+                            موجودی: {item.numb}عدد
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+          </View>
+          <View style={styles.HomeContentNewView}>
+            <View style={styles.HomeContentNewTitleView}>
+              <View style={styles.HomeContentNewTitleRightView}>
+                <Text style={styles.HomeContentNewTitleRightText}>
+                  همه محصولات
+                </Text>
               </View>
-            )}
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={() => navigate.navigate('PRODUCTS')}
+                style={styles.HomeContentNewTitleLeftView}>
+                <Text style={styles.HomeContentNewTitleLeftText}>
+                  مشاهده همه
+                </Text>
+                <MaterialIcons
+                  name="arrow-back-ios"
+                  color={SabaColors.sabaDarkGary}
+                  size={13}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.HomeContentNewItemsContainerView}>
+              {loading ? (
+                <View style={styles.HomeContentNewItemsIndicatorView}>
+                  <BarIndicator
+                    animationDuration={700}
+                    size={40}
+                    color={SabaColors.sabaGreen}
+                    count={5}
+                  />
+                </View>
+              ) : (
+                <View style={styles.HomeContentNewItemsView}>
+                  <ScrollView horizontal={true}>
+                    {products?.map(item => (
+                      <TouchableOpacity
+                        key={item.id}
+                        activeOpacity={0.9}
+                        onPress={() =>
+                          navigate.navigate('PRODUCT_SELF', {product: item})
+                        }
+                        style={styles.HomeContentNewItemView}>
+                        <View style={styles.HomeContentNewItemNavbarView}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              favDeleter(favorites, setFavorites, item.id)
+                            }
+                            style={styles.HomeContentNewItemNavbarRightView}>
+                            <AntDesign
+                              name={favoriteChacker(favorites, item.id)}
+                              size={20}
+                              color={SabaColors.sabaRed}
+                            />
+                          </TouchableOpacity>
+                          <View style={styles.HomeContentNewItemNavbarLeftView}>
+                            <View
+                              style={
+                                styles.HomeContentNewItemNavbarLeftExistView
+                              }>
+                              <Text
+                                style={
+                                  styles.HomeContentNewItemNavbarLeftExistText
+                                }>
+                                موجود
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                        <View
+                          style={styles.HomeContentNewItemImageContainerView}>
+                          {!isEmpty(item.pic_path) ? (
+                            <Image
+                              style={styles.HomeContentNewItemImage}
+                              source={{uri: endpoints.URL + item.pic_path}}
+                            />
+                          ) : (
+                            <Image
+                              style={{
+                                ...styles.HomeContentNewItemImage,
+                                opacity: 0.6,
+                              }}
+                              source={require('../assets/img/noneimage.png')}
+                            />
+                          )}
+                        </View>
+                        <View style={styles.HomeContentNewItemInfoView}>
+                          <Text style={styles.HomeContentNewItemInfoTitle}>
+                            {substringMaker(item.nam, 14)}
+                          </Text>
+                          <Text style={styles.HomeContentNewItemInfoPrice}>
+                            قیمت نقدی {MConverter(item.price)} تومان
+                          </Text>
+                          <Text style={styles.HomeContentNewItemInfoPrice}>
+                            قیمت چکی {MConverter(item.price1)} تومان
+                          </Text>
+                          <Text style={styles.HomeContentNewItemInfoExist}>
+                            موجودی: {item.numb}عدد
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  } catch (err: any) {
+    return <_ErrorLayout pageError="Home" errorDes={err.message} />;
+  }
 };
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -340,7 +339,7 @@ const styles = StyleSheet.create({
   HomeMenuTextView: {},
   HomeMenuText: {
     fontFamily: 'shabnamMed',
-    fontSize: 14,
+    fontSize: 13,
     color: SabaColors.sabaBlack,
     textShadowRadius: 9,
     textShadowColor: SabaColors.sabaDarkGary,
@@ -478,22 +477,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  HomeContentNewItemImageView: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    width: '60%',
-  },
+
   HomeContentNewItemImage: {
     resizeMode: 'contain',
     width: '100%',
-    height: '100%',
+    height: '97%',
   },
   HomeContentNewItemInfoView: {
     height: 100,
   },
   HomeContentNewItemInfoTitle: {
     fontFamily: 'shabnamMed',
-    fontSize: 14,
+    fontSize: 13,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaBlack,
@@ -501,7 +496,7 @@ const styles = StyleSheet.create({
   },
   HomeContentNewItemInfoPrice: {
     fontFamily: 'shabnam',
-    fontSize: 12,
+    fontSize: 11,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaDarkGary,
@@ -510,7 +505,7 @@ const styles = StyleSheet.create({
   HomeContentNewItemInfoExist: {
     marginTop: 8,
     fontFamily: 'shabnamMed',
-    fontSize: 12,
+    fontSize: 11,
     textShadowColor: SabaColors.sabaGreen,
     textShadowRadius: 2,
     color: SabaColors.sabaGreen,

@@ -55,6 +55,8 @@ def getProduct(request,groupid=0,groupid2=0):
     q = request.GET.get("q")
 
     if q:
+        if q.isnumeric():
+            q = numberConverter(q)
         # query = unicodeConverter(q)
         # products = Product.objects.filter(idanbar=1,stut=0,unam__contains=query).all()[:100]
         products = Product.objects.raw(f"exec queries @st=1,@unam={q}")

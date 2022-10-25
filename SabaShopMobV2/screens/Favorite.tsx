@@ -1,160 +1,140 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import React from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
-  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   Dimensions,
   Image,
-  TextInput,
   TouchableOpacity,
-  Button,
 } from 'react-native';
 import endpoints from '../utils/endpoints.json';
-import MenuModal from '../components/_menuModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Modal from 'react-native-modal';
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 import {useFocusEffect} from '@react-navigation/native';
-import {
-  BallIndicator,
-  BarIndicator,
-  DotIndicator,
-  MaterialIndicator,
-  PacmanIndicator,
-  PulseIndicator,
-  SkypeIndicator,
-  UIActivityIndicator,
-  WaveIndicator,
-} from 'react-native-indicators';
+import {MaterialIndicator} from 'react-native-indicators';
+import _ErrorLayout from '../layouts/ErrorLayout';
 import {useNavigation} from '@react-navigation/native';
 import {isEmpty} from 'lodash';
 import axios from 'axios';
 import {ActionFPList} from '../realm/ActionFPList';
-import {favDeleter} from '../utils/favoriteDeleter';
-import {TShop, TProductCover, TFavorite, TProductServer} from '../utils/types';
+import {TProductServer} from '../utils/types';
 
 const Favorite = () => {
-  const navigate = useNavigation();
-  const [favorites, setFavorites] = React.useState<number[]>([]);
-  const [favProducts, setFavProducts] = React.useState<TProductServer[]>();
-  const [loading, setLoading] = React.useState<boolean>(true);
-  useFocusEffect(
-    React.useCallback(() => {
-      ActionFPList('sync', 0, setFavorites);
-    }, []),
-  );
-  React.useEffect(() => {
-    (async () =>
-      await axios
-        .post(endpoints.getFavorites, JSON.stringify({favs: favorites}))
-        .then(({data, status}) => setFavProducts(data))
-        .finally(() => setLoading(false)))();
-  }, [favorites]);
+  try {
+    const navigate = useNavigation();
+    const [favorites, setFavorites] = React.useState<number[]>([]);
+    const [favProducts, setFavProducts] = React.useState<TProductServer[]>();
+    const [loading, setLoading] = React.useState<boolean>(true);
+    useFocusEffect(
+      React.useCallback(() => {
+        ActionFPList('sync', 0, setFavorites);
+      }, []),
+    );
+    React.useEffect(() => {
+      (async () =>
+        await axios
+          .post(endpoints.getFavorites, JSON.stringify({favs: favorites}))
+          .then(({data}) => setFavProducts(data))
+          .finally(() => setLoading(false)))();
+    }, [favorites]);
 
-  async function handleDeleteFavorite(id: number) {
-    ActionFPList('delete', id);
-    ActionFPList('sync', 0, setFavorites);
-  }
-  return (
-    <View style={styles.favoriteView}>
-      <View style={styles.favoriteTitleView}>
-        <Text style={styles.favoriteTitle}>نشان شده ها</Text>
-        <View style={styles.favoriteIconView}>
-          <AntDesign size={19} name="heart" color="#fff" />
+    async function handleDeleteFavorite(id: number) {
+      ActionFPList('delete', id);
+      ActionFPList('sync', 0, setFavorites);
+    }
+
+    return (
+      <View style={styles.favoriteView}>
+        <View style={styles.favoriteTitleView}>
+          <Text style={styles.favoriteTitle}>نشان شده ها</Text>
+          <View style={styles.favoriteIconView}>
+            <AntDesign size={19} name="heart" color="#fff" />
+          </View>
+        </View>
+        <View style={styles.favoriteContentLoadingView}>
+          {loading ? (
+            <MaterialIndicator
+              color={SabaColors.sabaGreen}
+              animationDuration={2900}
+              size={48}
+            />
+          ) : isEmpty(favProducts) ? (
+            <View style={styles.favoriteContentNoContentImageView}>
+              <Image
+                source={require('../assets/img/favorite/nofavorite.png')}
+                style={styles.favoriteContentNoContentImage}
+              />
+            </View>
+          ) : (
+            <ScrollView style={styles.favoriteContentView}>
+              {favProducts?.map((Fav, index) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigate.navigate('PRODUCT_SELF', {
+                      product: Fav,
+                    })
+                  }
+                  key={index}
+                  activeOpacity={0.8}
+                  style={styles.favoriteContentItemView}>
+                  <View style={styles.favoriteContentItemNavView}>
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      onPress={() => handleDeleteFavorite(Fav.id)}
+                      style={styles.favoriteContentItemNavStatusView}>
+                      <Ionicons
+                        name="close"
+                        color={SabaColors.sabaRed}
+                        size={17}
+                      />
+                    </TouchableOpacity>
+                    <View style={styles.favoriteContentItemNavIconView}>
+                      <Text style={styles.favoriteContentItemNavIconText}>
+                        موجود
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.favoriteContentItemArticleView}>
+                    <View style={styles.favoriteContentItemInfoView}>
+                      <Text style={styles.favoriteContentItemInfoTitle}>
+                        {Fav.nam}
+                      </Text>
+                      <Text style={styles.favoriteContentItemInfoPrice}>
+                        قیمت نقدی {Fav.price} تومان
+                      </Text>
+                      <Text style={styles.favoriteContentItemInfoPrice}>
+                        قیمت چکی {Fav.price1} تومان
+                      </Text>
+                    </View>
+                    <View style={styles.favoriteContentItemImageView}>
+                      {!isEmpty(Fav.pic_path) ? (
+                        <Image
+                          style={styles.favoriteContentItemImage}
+                          source={{uri: endpoints.URL + Fav.pic_path}}
+                        />
+                      ) : (
+                        <Image
+                          style={{
+                            ...styles.favoriteContentItemImage,
+                            opacity: 0.6,
+                          }}
+                          source={require('../assets/img/noneimage.png')}
+                        />
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
         </View>
       </View>
-      <View style={styles.favoriteContentLoadingView}>
-        {loading ? (
-          <MaterialIndicator
-            color={SabaColors.sabaGreen}
-            animationDuration={2900}
-            size={48}
-          />
-        ) : isEmpty(favProducts) ? (
-          <View style={styles.favoriteContentNoContentImageView}>
-            <Image
-              source={require('../assets/img/favorite/nofavorite.png')}
-              style={styles.favoriteContentNoContentImage}
-            />
-          </View>
-        ) : (
-          <ScrollView style={styles.favoriteContentView}>
-            {favProducts?.map((Fav, index) => (
-              <TouchableOpacity
-                onPress={() =>
-                  navigate.navigate('PRODUCT_SELF', {
-                    product: Fav,
-                  })
-                }
-                key={index}
-                activeOpacity={0.8}
-                style={styles.favoriteContentItemView}>
-                <View style={styles.favoriteContentItemNavView}>
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    onPress={() => handleDeleteFavorite(Fav.id)}
-                    style={styles.favoriteContentItemNavStatusView}>
-                    <Ionicons
-                      name="close"
-                      color={SabaColors.sabaRed}
-                      size={17}
-                    />
-                  </TouchableOpacity>
-                  <View style={styles.favoriteContentItemNavIconView}>
-                    <Text style={styles.favoriteContentItemNavIconText}>
-                      موجود
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.favoriteContentItemArticleView}>
-                  <View style={styles.favoriteContentItemInfoView}>
-                    <Text style={styles.favoriteContentItemInfoTitle}>
-                      {Fav.nam}
-                    </Text>
-                    <Text style={styles.favoriteContentItemInfoPrice}>
-                      قیمت نقدی {Fav.price} تومان
-                    </Text>
-                    <Text style={styles.favoriteContentItemInfoPrice}>
-                      قیمت چکی {Fav.price1} تومان
-                    </Text>
-                  </View>
-                  <View style={styles.favoriteContentItemImageView}>
-                    <Image
-                      style={styles.favoriteContentItemImage}
-                      source={{uri: endpoints.URL + Fav.pic_path}}
-                    />
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-    </View>
-  );
+    );
+  } catch (err: any) {
+    return <_ErrorLayout pageError="Favorite" errorDes={err.message} />;
+  }
 };
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({

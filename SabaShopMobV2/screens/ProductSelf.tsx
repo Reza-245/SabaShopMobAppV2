@@ -1,28 +1,15 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import {useCallback, useEffect, useState} from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
   SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   Dimensions,
   Image,
   TextInput,
   TouchableOpacity,
-  Button,
 } from 'react-native';
 import endpoints from '../utils/endpoints.json';
 import {ImageSlider} from 'react-native-image-slider-banner';
@@ -30,314 +17,319 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import _ErrorLayout from '../layouts/ErrorLayout';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Modal from 'react-native-modal';
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 import axios from 'axios';
 import {isEmpty} from 'lodash';
-
 import {toastCustom} from '../utils/toastCustom';
 import {useToast} from 'react-native-toast-notifications';
-import {FPListSchema, ProductCoverSchema} from '../realm/Models';
 import {favDeleter} from '../utils/favoriteDeleter';
 import {favoriteChacker} from '../utils/favoriteChecker';
 import {ActionFPList} from '../realm/ActionFPList';
 import {MConverter} from '../utils/moneyConverter';
 import {ActionShop} from '../realm/ActionShop';
-type TShop = {
-  _id: number;
-  orderedProducts: string[];
-};
-type TProductCover = {
-  _id: number;
-  productId: number;
-  orderCounts: number;
-};
+import {substringMaker} from '../utils/substringMaker';
+import {TProductCover} from '../utils/types';
 const ProductSelf = ({route}: any) => {
-  const toast = useToast();
-  const {product} = route.params;
-  const [supportModal, setSupportModal] = useState<boolean>(false);
-  const [favorites, setFavorites] = useState<number[]>();
-  const [products, setProducts] = useState<TProductCover[] | undefined>();
-  const [similarProducts, setSimilarProducts] = useState();
-  const [order, setOrder] = useState<boolean>(false);
-  const [ordered, setOrdered] = useState<boolean>(false);
-  const [orderCount, setOrderCount] = useState<string>('0');
-  const [shop, setShop] = useState<TShop>();
-
-  const navigate = useNavigation();
-  function handleOrderCount() {
-    if (isEmpty(orderCount) || orderCount === '0') handleDiscardOrder();
-    // toast.show('کالا لغو شد', toastCustom().info);
-    else {
-      if (orderCount > product.numb) {
-        ActionShop('create_update', product.id, parseInt(product.numb));
-        toast.show('کالا به اندازه موجودی ثبت شد', toastCustom().successInfo);
-        setOrderCount(String(product.numb));
-      } else {
-        toast.show('کالا ثبت شد', toastCustom().successInfo);
-        ActionShop('create_update', product.id, parseInt(orderCount));
-      }
-      setOrdered(true);
-      setOrder(true);
-    }
-  }
-
-  function hasOrdered(ordereds: TProductCover[] | undefined) {
-    if (ordereds && !isEmpty(ordereds)) {
-      const isExit = ordereds.find(pro => pro.productId == product.id);
-      if (isExit) {
-        const proCoverIndex: number = ordereds.findIndex(
-          pro => pro.productId == product.id,
-        );
+  try {
+    const toast = useToast();
+    const {product} = route.params;
+    const [favorites, setFavorites] = useState<number[]>();
+    const [similarProducts, setSimilarProducts] = useState();
+    const [order, setOrder] = useState<boolean>(false);
+    const [ordered, setOrdered] = useState<boolean>(false);
+    const [orderCount, setOrderCount] = useState<string>('0');
+    const navigate = useNavigation<any>();
+    function handleOrderCount() {
+      if (isEmpty(orderCount) || orderCount === '0') handleDiscardOrder();
+      else {
+        if (orderCount > product.numb) {
+          ActionShop('create_update', product.id, parseInt(product.numb));
+          toast.show('کالا به اندازه موجودی ثبت شد', toastCustom().success);
+          setOrderCount(String(product.numb));
+        } else {
+          toast.show('کالا ثبت شد', toastCustom().success);
+          ActionShop('create_update', product.id, parseInt(orderCount));
+        }
         setOrdered(true);
         setOrder(true);
-        setOrderCount(String(ordereds[proCoverIndex].orderCounts));
       }
     }
-  }
-  function handleOrder() {
-    setOrder(true);
-    setOrderCount('1');
-  }
-
-  useEffect(() => {}, []);
-  async function handleDiscardOrder() {
-    ActionShop('delete', product.id);
-    setOrdered(false);
-    setOrder(false);
-    setOrderCount('0');
-    toast.show('سفارش لغو شد', toastCustom().info);
-  }
-  useFocusEffect(
-    useCallback(() => {
-      ActionFPList('sync', 0, setFavorites);
-      ActionShop('sync', 0, 0, setProducts, hasOrdered);
-      (async () =>
-        await axios
-          .get(
-            `${endpoints.getSimilarProducts}${product.id}?similar=${product.nam}`,
-          )
-          .then(({data, status}) => {
-            setSimilarProducts(data);
-          }))();
-    }, []),
-  );
-
-  return (
-    <SafeAreaView>
-      <ImageSlider
-        data={[
-          {
-            img: endpoints.URL + product.pic_path,
-          },
-        ]}
-        autoPlay={true}
-        timer={2200}
-        closeIconColor={SabaColors.sabaDarkGary}
-        showHeader
-        headerLeftComponent={
-          <TouchableOpacity
-            onPress={() => navigate.goBack()}
-            activeOpacity={0.5}>
-            <AntDesign name="arrowleft" color="#fff" size={26} />
-          </TouchableOpacity>
+    function hasOrdered(ordereds: TProductCover[] | undefined) {
+      if (ordereds && !isEmpty(ordereds)) {
+        const isExit = ordereds.find(pro => pro.productId == product.id);
+        if (isExit) {
+          const proCoverIndex: number = ordereds.findIndex(
+            pro => pro.productId == product.id,
+          );
+          setOrdered(true);
+          setOrder(true);
+          setOrderCount(String(ordereds[proCoverIndex].orderCounts));
         }
-        headerRightComponent={
-          <TouchableOpacity
-            onPress={() => favDeleter(favorites, setFavorites, product.id)}
-            activeOpacity={0.5}>
-            <AntDesign
-              name={favoriteChacker(favorites, product.id)}
-              color={SabaColors.sabaRed}
-              size={26}
-            />
-          </TouchableOpacity>
-        }
-        activeIndicatorStyle={{
-          backgroundColor: SabaColors.sabaGreen,
-        }}
-        inActiveIndicatorStyle={{
-          backgroundColor: SabaColors.sabaGray,
-        }}
-        indicatorContainerStyle={{
-          bottom: 0,
-        }}
-        headerStyle={{
-          padding: 10,
-          position: 'absolute',
-          backgroundColor: 'rgba(90,90,90,0.3)',
-          zIndex: 3,
-        }}
-        caroselImageStyle={{
-          resizeMode: 'cover',
-          height: MainScreen.height - 490,
-        }}
-        caroselImageContainerStyle={{
-          opacity: 1,
-        }}
-      />
-      <View style={styles.productSelfView}>
-        <View style={styles.productInfoView}>
-          <View style={styles.productInfoImageView}>
-            <Image
-              style={styles.productInfoImage}
-              source={require('../assets/img/selfProduct/goshop.png')}
-            />
-          </View>
-          <View style={styles.productInfoContentView}>
-            <Text style={styles.productInfoContentTitle}>{product.nam}</Text>
-            <Text style={styles.productInfoContentPrice}>
-              قیمت نقدی {MConverter(product.price)} تومان
-            </Text>
-            <Text style={styles.productInfoContentPrice}>
-              قیمت چکی {MConverter(product.price1)} تومان
-            </Text>
-            <Text style={styles.productInfoContentExist}>
-              موجودی:{product.numb} عدد
-            </Text>
-            {order ? (
-              <View style={styles.productInfoContentCounterView}>
-                <TouchableOpacity
-                  onPress={ordered ? () => setOrdered(false) : handleOrderCount}
-                  activeOpacity={0.5}
-                  style={{
-                    ...styles.productInfoContentCounterRightView,
-                    backgroundColor: ordered
-                      ? SabaColors.sabaOrange
-                      : SabaColors.sabaGreen,
-                  }}>
-                  <FontAwesome5
-                    name={ordered ? 'pen' : 'check'}
-                    color="#fff"
-                    size={16}
-                  />
-                </TouchableOpacity>
-                <View
-                  style={{
-                    ...styles.productInfoContentCounterMiddleView,
-                    backgroundColor: ordered
-                      ? SabaColors.sabaGreen
-                      : SabaColors.sabaWhite,
-                  }}>
-                  <TextInput
-                    value={orderCount}
-                    editable={!ordered}
-                    style={{
-                      ...styles.productInfoContentCounterMiddleInput,
-                      color: ordered ? '#fff' : SabaColors.sabaDarkGary,
-                    }}
-                    onChangeText={value => setOrderCount(value)}
-                  />
-                </View>
-                <TouchableOpacity
-                  activeOpacity={0.5}
-                  onPress={handleDiscardOrder}
-                  style={styles.productInfoContentCounterLeftView}>
-                  <FontAwesome5 name="trash" color="#fff" size={16} />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.productInfoContentCounterOrderButtonView}>
-                <TouchableOpacity
-                  activeOpacity={0.5}
-                  onPress={handleOrder}
-                  style={styles.productInfoContentCounterOrderButton}>
-                  <FontAwesome name="shopping-basket" color="#fff" size={16} />
-                  <Text style={styles.productInfoContentCounterOrderButtonText}>
-                    سفارش
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-        <View style={styles.similarProductView}>
-          <View style={styles.similarProductTitleView}>
+      }
+    }
+    function handleOrder() {
+      setOrder(true);
+      setOrderCount('1');
+    }
+    useEffect(() => {}, []);
+    async function handleDiscardOrder() {
+      ActionShop('delete', product.id);
+      setOrdered(false);
+      setOrder(false);
+      setOrderCount('0');
+      toast.show('سفارش لغو شد', toastCustom().info);
+    }
+    useFocusEffect(
+      useCallback(() => {
+        ActionFPList('sync', 0, setFavorites);
+        ActionShop('sync', 0, 0, null, hasOrdered);
+        (async () =>
+          await axios
+            .get(
+              `${endpoints.getSimilarProducts}${product.id}?similar=${
+                product.nam.split(' ')[0]
+              }`,
+            )
+            .then(({data}) => {
+              setSimilarProducts(data);
+            }))();
+      }, []),
+    );
+    return (
+      <SafeAreaView>
+        <ImageSlider
+          data={[
+            {
+              img: isEmpty(product.pic_path)
+                ? require('../assets/img/noneimage.png')
+                : `${endpoints.URL + product.pic_path}`,
+            },
+          ]}
+          localImg={isEmpty(product.pic_path)}
+          autoPlay={true}
+          timer={2200}
+          closeIconColor={SabaColors.sabaDarkGary}
+          showHeader
+          headerLeftComponent={
             <TouchableOpacity
-              onPress={() => navigate.navigate('PRODUCTS')}
-              activeOpacity={0.5}
-              style={styles.similarProductTitleLeftView}>
-              <MaterialIcons
-                name="keyboard-arrow-left"
-                color={SabaColors.sabaDarkGary}
-                size={28}
-              />
-              <Text style={styles.similarProductTitleLeftText}>نمایش همه</Text>
+              onPress={() => navigate.goBack()}
+              activeOpacity={0.5}>
+              <AntDesign name="arrowleft" color="#fff" size={26} />
             </TouchableOpacity>
-            <View style={styles.similarProductTitleRightView}>
-              <Text style={styles.similarProductTitleRightText}>
-                محصولات مشابه
-              </Text>
+          }
+          headerRightComponent={
+            <TouchableOpacity
+              onPress={() => favDeleter(favorites, setFavorites, product.id)}
+              activeOpacity={0.5}>
+              <AntDesign
+                name={favoriteChacker(favorites, product.id)}
+                color={SabaColors.sabaRed}
+                size={26}
+              />
+            </TouchableOpacity>
+          }
+          activeIndicatorStyle={{
+            backgroundColor: SabaColors.sabaGreen,
+          }}
+          inActiveIndicatorStyle={{
+            backgroundColor: SabaColors.sabaGray,
+          }}
+          indicatorContainerStyle={{
+            bottom: 0,
+          }}
+          headerStyle={{
+            padding: 10,
+            position: 'absolute',
+            backgroundColor: 'rgba(90,90,90,0.3)',
+            zIndex: 3,
+          }}
+          caroselImageStyle={{
+            resizeMode: 'cover',
+            height: MainScreen.height - 490,
+          }}
+          caroselImageContainerStyle={{
+            opacity: 1,
+          }}
+        />
+        <View style={styles.productSelfView}>
+          <View style={styles.productInfoView}>
+            <View style={styles.productInfoImageView}>
+              <Image
+                style={styles.productInfoImage}
+                source={require('../assets/img/selfProduct/goshop.png')}
+              />
             </View>
-          </View>
-          <View style={styles.similarProductItemsView}>
-            <ScrollView horizontal={true}>
-              {similarProducts?.map(sim => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigate.replace('PRODUCT_SELF', {product: sim})
-                  }
-                  activeOpacity={0.5}
-                  key={sim.id}
-                  style={styles.similarProductItemView}>
-                  <View style={styles.similarProductItemNavbar}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        favDeleter(favorites, setFavorites, sim.id)
-                      }>
-                      <AntDesign
-                        name={favorites?.includes(sim.id) ? 'heart' : 'hearto'}
-                        color={
-                          favorites?.includes(sim.id)
-                            ? SabaColors.sabaRed
-                            : SabaColors.sabaGray
-                        }
-                        size={16}
-                      />
-                    </TouchableOpacity>
-
-                    <View style={styles.similarProductItemNavbarExistView}>
-                      <Text style={styles.similarProductItemNavbarExistText}>
-                        موجود
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.similarProductItemImageView}>
-                    <Image
-                      style={styles.similarProductItemImage}
-                      source={{uri: endpoints.URL + sim.pic_path}}
+            <View style={styles.productInfoContentView}>
+              <Text style={styles.productInfoContentTitle}>{product.nam}</Text>
+              <Text style={styles.productInfoContentPrice}>
+                قیمت نقدی {MConverter(product.price)} تومان
+              </Text>
+              <Text style={styles.productInfoContentPrice}>
+                قیمت چکی {MConverter(product.price1)} تومان
+              </Text>
+              <Text style={styles.productInfoContentExist}>
+                موجودی:{product.numb} عدد
+              </Text>
+              {order ? (
+                <View style={styles.productInfoContentCounterView}>
+                  <TouchableOpacity
+                    onPress={
+                      ordered ? () => setOrdered(false) : handleOrderCount
+                    }
+                    activeOpacity={0.5}
+                    style={{
+                      ...styles.productInfoContentCounterRightView,
+                      backgroundColor: ordered
+                        ? SabaColors.sabaOrange
+                        : SabaColors.sabaGreen,
+                    }}>
+                    <FontAwesome5
+                      name={ordered ? 'pen' : 'check'}
+                      color="#fff"
+                      size={16}
+                    />
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      ...styles.productInfoContentCounterMiddleView,
+                      backgroundColor: ordered
+                        ? SabaColors.sabaGreen
+                        : SabaColors.sabaWhite,
+                    }}>
+                    <TextInput
+                      value={orderCount}
+                      editable={!ordered}
+                      style={{
+                        ...styles.productInfoContentCounterMiddleInput,
+                        color: ordered ? '#fff' : SabaColors.sabaDarkGary,
+                      }}
+                      onChangeText={value => setOrderCount(value)}
                     />
                   </View>
-                  <View style={styles.similarProductItemInfoView}>
-                    <Text style={styles.similarProductItemInfoTitle}>
-                      {sim.nam}
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={handleDiscardOrder}
+                    style={styles.productInfoContentCounterLeftView}>
+                    <FontAwesome5 name="trash" color="#fff" size={16} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.productInfoContentCounterOrderButtonView}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={handleOrder}
+                    style={styles.productInfoContentCounterOrderButton}>
+                    <FontAwesome
+                      name="shopping-basket"
+                      color="#fff"
+                      size={16}
+                    />
+                    <Text
+                      style={styles.productInfoContentCounterOrderButtonText}>
+                      سفارش
                     </Text>
-                    <Text style={styles.similarProductItemInfoPrice}>
-                      قیمت نقدی {MConverter(sim.price)} تومان
-                    </Text>
-                    <Text style={styles.similarProductItemInfoPrice}>
-                      قیمت چکی {MConverter(sim.price1)} تومان
-                    </Text>
-                    <Text style={styles.similarProductItemInfoExist}>
-                      موجودی:{sim.numb} عدد
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+          <View style={styles.similarProductView}>
+            <View style={styles.similarProductTitleView}>
+              <TouchableOpacity
+                onPress={() => navigate.navigate('PRODUCTS')}
+                activeOpacity={0.5}
+                style={styles.similarProductTitleLeftView}>
+                <MaterialIcons
+                  name="keyboard-arrow-left"
+                  color={SabaColors.sabaDarkGary}
+                  size={28}
+                />
+                <Text style={styles.similarProductTitleLeftText}>
+                  نمایش همه
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.similarProductTitleRightView}>
+                <Text style={styles.similarProductTitleRightText}>
+                  محصولات مشابه
+                </Text>
+              </View>
+            </View>
+            <View style={styles.similarProductItemsView}>
+              <ScrollView horizontal={true}>
+                {similarProducts?.map(sim => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigate.replace('PRODUCT_SELF', {product: sim})
+                    }
+                    activeOpacity={0.5}
+                    key={sim.id}
+                    style={styles.similarProductItemView}>
+                    <View style={styles.similarProductItemNavbar}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          favDeleter(favorites, setFavorites, sim.id)
+                        }>
+                        <AntDesign
+                          name={
+                            favorites?.includes(sim.id) ? 'heart' : 'hearto'
+                          }
+                          color={
+                            favorites?.includes(sim.id)
+                              ? SabaColors.sabaRed
+                              : SabaColors.sabaGray
+                          }
+                          size={16}
+                        />
+                      </TouchableOpacity>
+
+                      <View style={styles.similarProductItemNavbarExistView}>
+                        <Text style={styles.similarProductItemNavbarExistText}>
+                          موجود
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.similarProductItemImageView}>
+                      {!isEmpty(sim.pic_path) ? (
+                        <Image
+                          style={styles.similarProductItemImage}
+                          source={{uri: endpoints.URL + sim.pic_path}}
+                        />
+                      ) : (
+                        <Image
+                          style={{
+                            ...styles.similarProductItemImage,
+                            opacity: 0.6,
+                          }}
+                          source={require('../assets/img/noneimage.png')}
+                        />
+                      )}
+                    </View>
+                    <View style={styles.similarProductItemInfoView}>
+                      <Text style={styles.similarProductItemInfoTitle}>
+                        {substringMaker(sim.nam, 12)}
+                      </Text>
+                      <Text style={styles.similarProductItemInfoPrice}>
+                        قیمت نقدی {MConverter(sim.price)} تومان
+                      </Text>
+                      <Text style={styles.similarProductItemInfoPrice}>
+                        قیمت چکی {MConverter(sim.price1)} تومان
+                      </Text>
+                      <Text style={styles.similarProductItemInfoExist}>
+                        موجودی:{sim.numb} عدد
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
           </View>
         </View>
-      </View>
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    );
+  } catch (err: any) {
+    return <_ErrorLayout pageError="ProductSelf" errorDes={err.message} />;
+  }
 };
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -352,6 +344,8 @@ const styles = StyleSheet.create({
   productInfoImageView: {
     height: '100%',
     width: '50%',
+    position: 'absolute',
+    left: 0,
   },
   productInfoImage: {
     resizeMode: 'contain',
@@ -359,7 +353,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   productInfoContentView: {
-    width: '50%',
+    width: '100%',
     height: '100%',
     padding: 12,
   },

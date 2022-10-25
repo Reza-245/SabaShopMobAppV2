@@ -1,138 +1,116 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
-import React from 'react';
 import SabaColors from '../utils/SabaColors.json';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-  Dimensions,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Button,
-} from 'react-native';
+import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Entypo from 'react-native-vector-icons/Entypo';
 import {toastCustom} from '../utils/toastCustom';
 import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import {useToast} from 'react-native-toast-notifications';
 import {Linking} from 'react-native';
+import _ErrorLayout from '../layouts/ErrorLayout';
 const _menuModal = ({supportModal, setSupportModal}: any) => {
-  const navigate = useNavigation();
-  const toast = useToast();
+  try {
+    const navigate = useNavigation<any>();
+    const toast = useToast();
+    const supportNumber = '09059147588';
+    const ManagerNumber = '09171081139';
+    const whatsAppNumber = '09059147588';
+    async function logout() {
+      await AsyncStorage.removeItem('saba2token');
+      navigate.replace('LOGIN');
+      toast.show('با موفقیت خارج شدید', toastCustom().info);
+    }
+    return (
+      <Modal
+        animationIn="fadeInRightBig"
+        animationOut="fadeOutRightBig"
+        animationInTiming={550}
+        animationOutTiming={550}
+        hideModalContentWhileAnimating={true}
+        isVisible={supportModal}
+        backdropOpacity={0}
+        style={{
+          justifyContent: 'flex-end',
+          flexDirection: 'row',
+          margin: 0,
+        }}
+        onBackdropPress={() => setSupportModal(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <TouchableOpacity
+              onPress={() => setSupportModal(false)}
+              activeOpacity={0.5}
+              style={styles.modalBack}>
+              <AntDesign
+                color={SabaColors.sabaGray}
+                size={26}
+                name="arrowright"
+              />
+            </TouchableOpacity>
+            <View style={styles.modalImageView}>
+              <Image
+                style={styles.modalImageLogo}
+                source={require('../assets/img/sabaLogo.png')}
+              />
+              <Text style={styles.modalImageText}>گروه نرم افزاری صبا</Text>
+            </View>
+            <View style={styles.modalMenuNavbar}>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`tel:${supportNumber}`)}
+                style={{
+                  ...styles.modalMenuNavbarItem,
+                  backgroundColor: SabaColors.sabaIndigo,
+                }}>
+                <FontAwesome5 color="#fff" name="question" size={26} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  Linking.openURL(`whatsapp://send?phone=${whatsAppNumber}`)
+                }
+                style={{
+                  ...styles.modalMenuNavbarItem,
+                  backgroundColor: SabaColors.sabaGreen,
+                }}>
+                <FontAwesome color="#fff" name="whatsapp" size={30} />
+              </TouchableOpacity>
 
-  const supportNumber = '09059147588';
-  const ManagerNumber = '09171081139';
-  const whatsAppNumber = '09059147588';
-
-  async function logout() {
-    await AsyncStorage.removeItem('saba2token');
-    navigate.replace('LOGIN');
-    toast.show('با موفقیت خارج شدید', toastCustom().info);
-  }
-  return (
-    <Modal
-      animationIn="fadeInRightBig"
-      animationOut="fadeOutRightBig"
-      animationInTiming={550}
-      animationOutTiming={550}
-      hideModalContentWhileAnimating={true}
-      isVisible={supportModal}
-      backdropOpacity={0}
-      style={{
-        justifyContent: 'flex-end',
-        flexDirection: 'row',
-        margin: 0,
-      }}
-      onBackdropPress={() => setSupportModal(false)}>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalView}>
-          <TouchableOpacity
-            onPress={() => setSupportModal(false)}
-            activeOpacity={0.5}
-            style={styles.modalBack}>
-            <AntDesign
-              color={SabaColors.sabaGray}
-              size={26}
-              name="arrowright"
-            />
-          </TouchableOpacity>
-          <View style={styles.modalImageView}>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`tel:${ManagerNumber}`)}
+                style={{
+                  ...styles.modalMenuNavbarItem,
+                  backgroundColor: SabaColors.sabaGold,
+                }}>
+                <FontAwesome5 color="#fff" name="phone" size={26} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={logout}
+                style={styles.modalMenuNavbarItem}>
+                <MaterialIcons color="#fff" name="logout" size={30} />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                height: 0.3,
+                backgroundColor: SabaColors.sabaGray,
+                elevation: 3,
+              }}></View>
+          </View>
+          <View style={styles.modalBottomImageView}>
             <Image
-              style={styles.modalImageLogo}
-              source={require('../assets/img/sabaLogo.png')}
+              style={styles.modalBottomImage}
+              source={require('../assets/img/modal/ModalImageBottom.png')}
             />
-            <Text style={styles.modalImageText}>گروه نرم افزاری صبا</Text>
           </View>
-          <View style={styles.modalMenuNavbar}>
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`tel:${supportNumber}`)}
-              style={{
-                ...styles.modalMenuNavbarItem,
-                backgroundColor: SabaColors.sabaIndigo,
-              }}>
-              <FontAwesome5 color="#fff" name="question" size={26} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL(`whatsapp://send?phone=${whatsAppNumber}`)
-              }
-              style={{
-                ...styles.modalMenuNavbarItem,
-                backgroundColor: SabaColors.sabaGreen,
-              }}>
-              <FontAwesome color="#fff" name="whatsapp" size={30} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`tel:${ManagerNumber}`)}
-              style={{
-                ...styles.modalMenuNavbarItem,
-                backgroundColor: SabaColors.sabaGold,
-              }}>
-              <FontAwesome5 color="#fff" name="phone" size={26} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={logout}
-              style={styles.modalMenuNavbarItem}>
-              <MaterialIcons color="#fff" name="logout" size={30} />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              height: 0.3,
-              backgroundColor: SabaColors.sabaGray,
-              elevation: 3,
-            }}></View>
         </View>
-        <View style={styles.modalBottomImageView}>
-          <Image
-            style={styles.modalBottomImage}
-            source={require('../assets/img/modal/ModalImageBottom.png')}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
+      </Modal>
+    );
+  } catch (err: any) {
+    return <_ErrorLayout pageError="Mainlayout" errorDes={err.message} />;
+  }
 };
-const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
   // * ------------------------------------------------ Modal
   modalContainer: {

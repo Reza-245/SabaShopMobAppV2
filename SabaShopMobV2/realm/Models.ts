@@ -6,7 +6,6 @@ export const FPListSchema = {
   },
   primaryKey: '_id',
 };
-
 export const ProductCoverSchema = {
   name: 'ProductCoverSchema',
   properties: {

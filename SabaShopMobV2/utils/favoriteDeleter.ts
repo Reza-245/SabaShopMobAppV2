@@ -1,5 +1,4 @@
 import {ActionFPList} from '../realm/ActionFPList';
-
 export async function favDeleter(
   favorites: number[] | undefined,
   setFavorites: (favoriteList: number[]) => void,

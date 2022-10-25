@@ -1,417 +1,409 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
-import {useCallback, useState, useContext} from 'react';
+import {useCallback, useState} from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
-  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   Dimensions,
   Image,
   TextInput,
   TouchableOpacity,
-  Button,
 } from 'react-native';
-import MenuModal from '../components/_menuModal';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Modal from 'react-native-modal';
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import _ErrorLayout from '../layouts/ErrorLayout';
 import {useFocusEffect} from '@react-navigation/native';
-import {debounce, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import axios from 'axios';
 import endpoints from '../utils/endpoints.json';
-import Products from './Products';
 import {SkypeIndicator} from 'react-native-indicators';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useToast} from 'react-native-toast-notifications';
 import {toastCustom} from '../utils/toastCustom';
 import {favDeleter} from '../utils/favoriteDeleter';
 import {favoriteChacker} from '../utils/favoriteChecker';
-import {ActionFPList} from '../realm/ActionFPList';
 import {MConverter} from '../utils/moneyConverter';
 import {FPListSchema, ProductCoverSchema} from '../realm/Models';
 import {ActionShop} from '../realm/ActionShop';
-import {TFavorite, TProductCover, TProductServer} from '../utils/types';
+import {TProductCover, TProductServer} from '../utils/types';
 const Shop = ({ordersNumber, setOrdersNumber}: any) => {
-  const [products, setProducts] = useState<TProductServerMixed[]>([]);
-  const [favorites, setFavorites] = useState<number[]>();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [ordering, setOrdering] = useState<boolean>(false);
-  const toast = useToast();
-  type TProductServerMixed = TProductServer & {
-    proNumbers: number;
-  };
+  try {
+    const [products, setProducts] = useState<TProductServerMixed[]>([]);
+    const [favorites, setFavorites] = useState<number[]>();
+    const [loading, setLoading] = useState<boolean>(true);
+    const [ordering, setOrdering] = useState<boolean>(false);
+    const toast = useToast();
+    type TProductServerMixed = TProductServer & {
+      proNumbers: number;
+    };
 
-  function handleEditPorduct(type: string, id: number) {
-    const realm = new Realm({
-      path: 'SabaShopV2DB',
-      schema: [ProductCoverSchema, FPListSchema],
-    });
-    realm.write(() => {
-      let productCover: TProductCover | any =
-        realm.objectForPrimaryKey<TProductCover>('ProductCoverSchema', id);
-      let productsFromServer: TProductServerMixed[] | null = [...products];
-      let productIndex: number = productsFromServer.findIndex(
-        pro => pro.id == id,
-      );
-
-      const product: TProductServerMixed | undefined = products.find(
-        pro => pro.id == id,
-      );
-
-      if (product) {
-        switch (type) {
-          case 'minus':
-            if (productCover.orderCounts > 1) {
-              productCover.orderCounts--;
-              product.proNumbers = productCover.orderCounts;
-            }
-
-            break;
-          case 'plus':
-            if (productCover.orderCounts < product.numb) {
-              productCover.orderCounts++;
-              product.proNumbers = productCover.orderCounts;
-            } else
-              toast.show(
-                'نمیتوان بیشتر از موجودی سفارش داد',
-                toastCustom().info,
-              );
-
-            break;
-        }
-        productsFromServer[productIndex] = product;
-        setProducts(productsFromServer);
-        productCover = null;
-        productsFromServer = null;
-      }
-    });
-    realm.close();
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      let source = axios.CancelToken.source();
-      let AxiosConfigCancel = {cancelToken: source.token};
-
-      // ** favoritte
+    function handleEditPorduct(type: string, id: number) {
       const realm = new Realm({
         path: 'SabaShopV2DB',
         schema: [ProductCoverSchema, FPListSchema],
       });
+      realm.write(() => {
+        let productCover: TProductCover | any =
+          realm.objectForPrimaryKey<TProductCover>('ProductCoverSchema', id);
+        let productsFromServer: TProductServerMixed[] | null = [...products];
+        let productIndex: number = productsFromServer.findIndex(
+          pro => pro.id == id,
+        );
 
-      const ProductsMobile: TProductCover[] | any =
-        realm.objects<TProductCover[]>('ProductCoverSchema');
-      const ProsMobile_ConvertedNumberList: number[] = [];
-      for (let pro of ProductsMobile)
-        ProsMobile_ConvertedNumberList.push(pro.productId);
+        const product: TProductServerMixed | undefined = products.find(
+          pro => pro.id == id,
+        );
 
-      async function getData() {
-        await axios
-          .post(
-            endpoints.getShopProducts,
-            JSON.stringify({favs: ProsMobile_ConvertedNumberList}),
-            AxiosConfigCancel,
-          )
-          .then(({data, status}) => {
-            // ** Mixing DataFromMobile with DataFromServer
-            let _Products = [];
-            if (ProductsMobile)
-              for (let pro of data) {
-                let the_id = ProductsMobile.find(p => p.productId == pro.id);
-                pro.proNumbers = the_id?.orderCounts;
-                _Products.push(pro);
+        if (product) {
+          switch (type) {
+            case 'minus':
+              if (productCover.orderCounts > 1) {
+                productCover.orderCounts--;
+                product.proNumbers = productCover.orderCounts;
               }
-            setProducts(_Products);
-          })
-          .catch(() => {})
-          .finally(() => {
-            setLoading(false);
-            // realm.close()
-          });
-      }
 
-      getData();
-      return () => {
-        setLoading(false);
-        source.cancel();
-      };
-    }, []),
-  );
+              break;
+            case 'plus':
+              if (productCover.orderCounts < product.numb) {
+                productCover.orderCounts++;
+                product.proNumbers = productCover.orderCounts;
+              } else
+                toast.show(
+                  'نمیتوان بیشتر از موجودی سفارش داد',
+                  toastCustom().info,
+                );
 
-  function wholePriceChecker() {
-    let prices: number = 0;
-    for (let pro of products) prices = pro.price * pro.proNumbers + prices;
-    return prices;
-  }
-
-  function handleDeleteProduct(id: number) {
-    ActionShop('delete', id);
-    const old_products: TProductServerMixed[] = [...products];
-    const updated_products = old_products.filter(pro => pro.id != id);
-    setProducts(updated_products);
-    setOrdersNumber(updated_products.length);
-  }
-
-  function handleDeleteBasket() {
-    ActionShop('delete', 0, 0, null, null, null, true);
-    setProducts([]);
-    setOrdersNumber(0);
-    toast.show('سبد حذف شد', toastCustom().info);
-  }
-
-  async function handleOrder() {
-    setOrdering(!ordering);
-    const customer = await AsyncStorage.getItem('saba2token');
-    let orderObject: object[] = [];
-    for (let ordered of products) {
-      let order = {
-        cod: ordered.id,
-        numb: ordered.proNumbers,
-        idcast: customer?.split('|')[1],
-        iduser: '-1',
-      };
-      orderObject.push(order);
+              break;
+          }
+          productsFromServer[productIndex] = product;
+          setProducts(productsFromServer);
+          productCover = null;
+          productsFromServer = null;
+        }
+      });
+      realm.close();
     }
-    await axios
-      .post(endpoints.finalSubmit, JSON.stringify(orderObject))
-      .then(() => {
-        ActionShop('delete', 0, 0, null, null, null, true);
-        setOrdersNumber(0);
-        setOrdering(false);
-        setProducts([]);
-        toast.show('سبد با موفقیت ثبت شد', toastCustom().success);
-      })
-      .catch(() => {});
-  }
-  return (
-    <View style={styles.shopView}>
-      {isEmpty(products) ? (
-        <View style={styles.shopBasketNotImageView}>
-          <Image
-            style={styles.shopBasketNotImage}
-            source={require('../assets/img/shop/shopbasketnotfound.png')}
-          />
-        </View>
-      ) : (
-        <>
-          {loading ? (
-            <SkypeIndicator size={60} color={SabaColors.sabaIndigo} />
-          ) : (
-            <>
-              <View style={styles.shopBasketView}>
-                <View style={styles.shopBasketTitleView}>
-                  <View style={styles.shopBasketTitleRightView}>
-                    <Text style={styles.shopBasketTitleRightText}>
-                      سبد کالا
-                    </Text>
-                    <View style={styles.shopBasketTitleRightIconView}>
-                      <FontAwesome5
-                        color="#fff"
-                        name="shopping-cart"
-                        size={15}
-                      />
+
+    useFocusEffect(
+      useCallback(() => {
+        let source = axios.CancelToken.source();
+        let AxiosConfigCancel = {cancelToken: source.token};
+
+        // ** favoritte
+        const realm = new Realm({
+          path: 'SabaShopV2DB',
+          schema: [ProductCoverSchema, FPListSchema],
+        });
+
+        const ProductsMobile: TProductCover[] | any =
+          realm.objects<TProductCover[]>('ProductCoverSchema');
+        const ProsMobile_ConvertedNumberList: number[] = [];
+        for (let pro of ProductsMobile)
+          ProsMobile_ConvertedNumberList.push(pro.productId);
+
+        async function getData() {
+          await axios
+            .post(
+              endpoints.getShopProducts,
+              JSON.stringify({favs: ProsMobile_ConvertedNumberList}),
+              AxiosConfigCancel,
+            )
+            .then(({data, status}) => {
+              // ** Mixing DataFromMobile with DataFromServer
+              let _Products = [];
+              if (ProductsMobile)
+                for (let pro of data) {
+                  let the_id = ProductsMobile.find(p => p.productId == pro.id);
+                  pro.proNumbers = the_id?.orderCounts;
+                  _Products.push(pro);
+                }
+              setProducts(_Products);
+            })
+            .catch(() => {})
+            .finally(() => {
+              setLoading(false);
+              // realm.close()
+            });
+        }
+
+        getData();
+        return () => {
+          setLoading(false);
+          source.cancel();
+        };
+      }, []),
+    );
+
+    function wholePriceChecker() {
+      let prices: number = 0;
+      for (let pro of products) prices = pro.price * pro.proNumbers + prices;
+      return prices;
+    }
+
+    function handleDeleteProduct(id: number) {
+      ActionShop('delete', id);
+      const old_products: TProductServerMixed[] = [...products];
+      const updated_products = old_products.filter(pro => pro.id != id);
+      setProducts(updated_products);
+      setOrdersNumber(updated_products.length);
+    }
+
+    function handleDeleteBasket() {
+      ActionShop('delete', 0, 0, null, null, null, true);
+      setProducts([]);
+      setOrdersNumber(0);
+      toast.show('سبد حذف شد', toastCustom().info);
+    }
+
+    async function handleOrder() {
+      setOrdering(!ordering);
+      const customer = await AsyncStorage.getItem('saba2token');
+      let orderObject: object[] = [];
+      for (let ordered of products) {
+        let order = {
+          cod: ordered.id,
+          numb: ordered.proNumbers,
+          idcast: customer?.split('|')[1],
+          iduser: '-1',
+        };
+        orderObject.push(order);
+      }
+      await axios
+        .post(endpoints.finalSubmit, JSON.stringify(orderObject))
+        .then(() => {
+          ActionShop('delete', 0, 0, null, null, null, true);
+          setOrdersNumber(0);
+          setOrdering(false);
+          setProducts([]);
+          toast.show('سبد با موفقیت ثبت شد', toastCustom().success);
+        })
+        .catch(() => {});
+    }
+    return (
+      <View style={styles.shopView}>
+        {isEmpty(products) ? (
+          <View style={styles.shopBasketNotImageView}>
+            <Image
+              style={styles.shopBasketNotImage}
+              source={require('../assets/img/shop/shopbasketnotfound.png')}
+            />
+          </View>
+        ) : (
+          <>
+            {loading ? (
+              <SkypeIndicator size={60} color={SabaColors.sabaIndigo} />
+            ) : (
+              <>
+                <View style={styles.shopBasketView}>
+                  <View style={styles.shopBasketTitleView}>
+                    <View style={styles.shopBasketTitleRightView}>
+                      <Text style={styles.shopBasketTitleRightText}>
+                        سبد کالا
+                      </Text>
+                      <View style={styles.shopBasketTitleRightIconView}>
+                        <FontAwesome5
+                          color="#fff"
+                          name="shopping-cart"
+                          size={15}
+                        />
+                      </View>
                     </View>
-                  </View>
-                  <View style={styles.shopBasketTitleLeftView}>
-                    <TouchableOpacity
-                      onPress={handleDeleteBasket}
-                      activeOpacity={0.5}
-                      style={styles.shopBasketTitleLeftButtonView}>
-                      <Text style={styles.shopBasketTitleLeft}>لغو سبد</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={styles.shopBasketInfoView}>
-                  <View style={styles.shopBasketInfoDetailView}>
-                    <View style={styles.shopBasketInfoDetail}>
-                      <Text style={styles.shopBasketInfoDetailTextRight}>
-                        تعداد اجناس
-                      </Text>
-                      <Text style={styles.shopBasketInfoDetailTextLeft}>
-                        {ordersNumber} عدد
-                      </Text>
-                    </View>
-                    <View style={styles.shopBasketInfoDetail}>
-                      <Text style={styles.shopBasketInfoDetailTextRight}>
-                        قیمت کل اجناس
-                      </Text>
-                      <Text style={styles.shopBasketInfoDetailTextLeft}>
-                        {MConverter(wholePriceChecker())} تومان
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.shopBasketButtonContentView}>
-                    <View style={styles.shopBasketButtonView}>
+                    <View style={styles.shopBasketTitleLeftView}>
                       <TouchableOpacity
+                        onPress={handleDeleteBasket}
                         activeOpacity={0.5}
-                        onPress={handleOrder}
-                        style={styles.shopBasketButtonTouchView}>
-                        {ordering ? (
-                          <SkypeIndicator size={28} color="#fff" />
-                        ) : (
-                          <Text style={styles.shopBasketButtonText}>
-                            ثبت درخواست
-                          </Text>
-                        )}
+                        style={styles.shopBasketTitleLeftButtonView}>
+                        <Text style={styles.shopBasketTitleLeft}>لغو سبد</Text>
                       </TouchableOpacity>
                     </View>
-                    <View style={styles.shopBasketButtonImageView}>
-                      <Image
-                        style={styles.shopBasketButtonImage}
-                        source={require('../assets/img/shop/Cart.png')}
-                      />
+                  </View>
+                  <View style={styles.shopBasketInfoView}>
+                    <View style={styles.shopBasketInfoDetailView}>
+                      <View style={styles.shopBasketInfoDetail}>
+                        <Text style={styles.shopBasketInfoDetailTextRight}>
+                          تعداد اجناس
+                        </Text>
+                        <Text style={styles.shopBasketInfoDetailTextLeft}>
+                          {ordersNumber} عدد
+                        </Text>
+                      </View>
+                      <View style={styles.shopBasketInfoDetail}>
+                        <Text style={styles.shopBasketInfoDetailTextRight}>
+                          قیمت کل اجناس
+                        </Text>
+                        <Text style={styles.shopBasketInfoDetailTextLeft}>
+                          {MConverter(wholePriceChecker())} تومان
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.shopBasketButtonContentView}>
+                      <View style={styles.shopBasketButtonView}>
+                        <TouchableOpacity
+                          activeOpacity={0.5}
+                          onPress={handleOrder}
+                          style={styles.shopBasketButtonTouchView}>
+                          {ordering ? (
+                            <SkypeIndicator size={28} color="#fff" />
+                          ) : (
+                            <Text style={styles.shopBasketButtonText}>
+                              ثبت درخواست
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.shopBasketButtonImageView}>
+                        <Image
+                          style={styles.shopBasketButtonImage}
+                          source={require('../assets/img/shop/Cart.png')}
+                        />
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-              <View style={styles.shopBasketItemsView}>
-                <ScrollView>
-                  {products &&
-                    products.map((pro, index) => (
-                      <View key={pro.id} style={styles.shopBasketItemView}>
-                        <View style={styles.shopBasketTopButtonView}>
-                          <TouchableOpacity
-                            style={styles.shopBasketRemoveButton}
-                            onPress={() => handleDeleteProduct(pro.id)}
-                            activeOpacity={0.5}>
-                            <FontAwesome5
-                              color={SabaColors.sabaRed}
-                              size={16}
-                              name="trash-alt"
-                            />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.shopBasketRemoveButton}
-                            onPress={() =>
-                              favDeleter(favorites, setFavorites, pro.id)
-                            }
-                            activeOpacity={0.5}>
-                            <AntDesign
-                              color={SabaColors.sabaRed}
-                              size={16}
-                              name={favoriteChacker(favorites, pro.id)}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                        <View style={styles.shopBasketContentView}>
-                          <View style={styles.shopBasketContentDetailsView}>
-                            <View
-                              style={styles.shopBasketContentDetailsTopView}>
-                              <Text
-                                style={styles.shopBasketContentDetailsTitle}>
-                                {pro.nam}
-                              </Text>
-                              <Text
-                                style={styles.shopBasketContentDetailsPrice}>
-                                قیمت نقدی {MConverter(pro.price)} تومان
-                              </Text>
-                              <Text
-                                style={styles.shopBasketContentDetailsPrice}>
-                                قیمت چکی {MConverter(pro.price1)} تومان
-                              </Text>
-                            </View>
+                <View style={styles.shopBasketItemsView}>
+                  <ScrollView>
+                    {products &&
+                      products.map((pro, index) => (
+                        <View key={pro.id} style={styles.shopBasketItemView}>
+                          <View style={styles.shopBasketTopButtonView}>
+                            <TouchableOpacity
+                              style={styles.shopBasketRemoveButton}
+                              onPress={() => handleDeleteProduct(pro.id)}
+                              activeOpacity={0.5}>
+                              <FontAwesome5
+                                color={SabaColors.sabaRed}
+                                size={16}
+                                name="trash-alt"
+                              />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.shopBasketRemoveButton}
+                              onPress={() =>
+                                favDeleter(favorites, setFavorites, pro.id)
+                              }
+                              activeOpacity={0.5}>
+                              <AntDesign
+                                color={SabaColors.sabaRed}
+                                size={16}
+                                name={favoriteChacker(favorites, pro.id)}
+                              />
+                            </TouchableOpacity>
                           </View>
-                          <View style={styles.shopBasketContentImageView}>
-                            <Image
-                              style={styles.shopBasketContentImage}
-                              source={{uri: endpoints.URL + pro.pic_path}}
-                            />
-                          </View>
-                        </View>
-                        <View style={styles.shopBasketContentWholePriceView}>
-                          <View
-                            style={
-                              styles.shopBasketContentWholePriceItemViewRight
-                            }>
-                            <View
-                              style={styles.shopBasketContentDetailsBottomView}>
-                              <TouchableOpacity
-                                onPress={() =>
-                                  handleEditPorduct('plus', pro.id)
-                                }
-                                activeOpacity={0.5}
-                                style={
-                                  styles.shopBasketContentDetailsBottomPlusView
-                                }>
-                                <FontAwesome5
-                                  name="plus"
-                                  color={SabaColors.sabaWhite}
-                                  size={18}
-                                />
-                              </TouchableOpacity>
+                          <View style={styles.shopBasketContentView}>
+                            <View style={styles.shopBasketContentDetailsView}>
                               <View
-                                style={
-                                  styles.shopBasketContentDetailsInputView
-                                }>
-                                <TextInput
-                                  value={String(pro.proNumbers)}
-                                  style={styles.shopBasketContentDetailsInput}
-                                />
+                                style={styles.shopBasketContentDetailsTopView}>
+                                <Text
+                                  style={styles.shopBasketContentDetailsTitle}>
+                                  {pro.nam}
+                                </Text>
+                                <Text
+                                  style={styles.shopBasketContentDetailsPrice}>
+                                  قیمت نقدی {MConverter(pro.price)} تومان
+                                </Text>
+                                <Text
+                                  style={styles.shopBasketContentDetailsPrice}>
+                                  قیمت چکی {MConverter(pro.price1)} تومان
+                                </Text>
                               </View>
-                              <TouchableOpacity
-                                onPress={() =>
-                                  handleEditPorduct('minus', pro.id)
-                                }
-                                activeOpacity={0.5}
-                                style={
-                                  styles.shopBasketContentDetailsBottomMinusView
-                                }>
-                                <FontAwesome5
-                                  color={SabaColors.sabaWhite}
-                                  name="minus"
-                                  size={18}
+                            </View>
+                            <View style={styles.shopBasketContentImageView}>
+                              {!isEmpty(pro.pic_path) ? (
+                                <Image
+                                  style={styles.shopBasketContentImage}
+                                  source={{uri: endpoints.URL + pro.pic_path}}
                                 />
-                              </TouchableOpacity>
+                              ) : (
+                                <Image
+                                  style={{
+                                    ...styles.shopBasketContentImage,
+                                    opacity: 0.6,
+                                  }}
+                                  source={require('../assets/img/noneimage.png')}
+                                />
+                              )}
                             </View>
                           </View>
-                          <View
-                            style={
-                              styles.shopBasketContentWholePriceItemViewLeft
-                            }>
+                          <View style={styles.shopBasketContentWholePriceView}>
                             <View
                               style={
-                                styles.shopBasketContentWholePriceItemViewLeftView
+                                styles.shopBasketContentWholePriceItemViewRight
                               }>
-                              <Text
+                              <View
                                 style={
-                                  styles.shopBasketContentWholePriceItemText
+                                  styles.shopBasketContentDetailsBottomView
                                 }>
-                                جمع کل: {MConverter(pro.proNumbers * pro.price)}
-                              </Text>
+                                <TouchableOpacity
+                                  onPress={() =>
+                                    handleEditPorduct('plus', pro.id)
+                                  }
+                                  activeOpacity={0.5}
+                                  style={
+                                    styles.shopBasketContentDetailsBottomPlusView
+                                  }>
+                                  <FontAwesome5
+                                    name="plus"
+                                    color={SabaColors.sabaWhite}
+                                    size={18}
+                                  />
+                                </TouchableOpacity>
+                                <View
+                                  style={
+                                    styles.shopBasketContentDetailsInputView
+                                  }>
+                                  <TextInput
+                                    value={String(pro.proNumbers)}
+                                    style={styles.shopBasketContentDetailsInput}
+                                  />
+                                </View>
+                                <TouchableOpacity
+                                  onPress={() =>
+                                    handleEditPorduct('minus', pro.id)
+                                  }
+                                  activeOpacity={0.5}
+                                  style={
+                                    styles.shopBasketContentDetailsBottomMinusView
+                                  }>
+                                  <FontAwesome5
+                                    color={SabaColors.sabaWhite}
+                                    name="minus"
+                                    size={18}
+                                  />
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                            <View
+                              style={
+                                styles.shopBasketContentWholePriceItemViewLeft
+                              }>
+                              <View
+                                style={
+                                  styles.shopBasketContentWholePriceItemViewLeftView
+                                }>
+                                <Text
+                                  style={
+                                    styles.shopBasketContentWholePriceItemText
+                                  }>
+                                  جمع کل:{' '}
+                                  {MConverter(pro.proNumbers * pro.price)}
+                                </Text>
+                              </View>
                             </View>
                           </View>
                         </View>
-                      </View>
-                    ))}
-                </ScrollView>
-              </View>
-            </>
-          )}
-        </>
-      )}
-    </View>
-  );
+                      ))}
+                  </ScrollView>
+                </View>
+              </>
+            )}
+          </>
+        )}
+      </View>
+    );
+  } catch (err: any) {
+    return <_ErrorLayout pageError="Shop" errorDes={err.message} />;
+  }
 };
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -573,14 +565,14 @@ const styles = StyleSheet.create({
   },
   shopBasketContentDetailsTitle: {
     fontFamily: 'shabnamMed',
-    fontSize: 16,
+    fontSize: 13,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaBlack,
   },
   shopBasketContentDetailsPrice: {
     fontFamily: 'shabnam',
-    fontSize: 13,
+    fontSize: 12,
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaDarkGary,
