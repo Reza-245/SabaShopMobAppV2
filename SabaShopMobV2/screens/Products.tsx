@@ -215,9 +215,9 @@ const Products = ({route}: any) => {
                   </View>
                 </View>
                 <View style={styles.productsContentItemArticleExistView}>
-                  <Text style={styles.productsContentItemInfoExist}>
+                  {/* <Text style={styles.productsContentItemInfoExist}>
                     موجودی: {item.numb} عدد
-                  </Text>
+                  </Text> */}
                 </View>
               </TouchableOpacity>
             )}
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 8,
     elevation: 2,
-    marginBottom: 9,
+    marginVertical: 6,
   },
   productsContentItemNavView: {
     justifyContent: 'space-between',

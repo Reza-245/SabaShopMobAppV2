@@ -168,9 +168,9 @@ const ProductSelf = ({route}: any) => {
               <Text style={styles.productInfoContentPrice}>
                 قیمت چکی {MConverter(product.price1)} تومان
               </Text>
-              <Text style={styles.productInfoContentExist}>
+              {/* <Text style={styles.productInfoContentExist}>
                 موجودی:{product.numb} عدد
-              </Text>
+              </Text> */}
               {order ? (
                 <View style={styles.productInfoContentCounterView}>
                   <TouchableOpacity
@@ -315,9 +315,9 @@ const ProductSelf = ({route}: any) => {
                       <Text style={styles.similarProductItemInfoPrice}>
                         قیمت چکی {MConverter(sim.price1)} تومان
                       </Text>
-                      <Text style={styles.similarProductItemInfoExist}>
+                      {/* <Text style={styles.similarProductItemInfoExist}>
                         موجودی:{sim.numb} عدد
-                      </Text>
+                      </Text> */}
                     </View>
                   </TouchableOpacity>
                 ))}

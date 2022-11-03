@@ -29,21 +29,21 @@ const Profile = () => {
   try {
     const toast = useToast();
     const navigate = useNavigation<any>();
-    useEffect(() => {
-      if (!isEmpty(toast)) {
-        let counts1: number = 0;
-        BackHandler.addEventListener('hardwareBackPress', () => {
-          if (counts1 > 0) BackHandler.exitApp();
-          counts1++;
-          toast.show(
-            'برای بستن برنامه، دوبار برگشت بزنید',
-            toastCustom().toastInfo,
-          );
-          setTimeout(() => (counts1 = 0), 1000);
-          return true;
-        });
-      }
-    }, [toast]);
+    // useEffect(() => {
+    //   if (!isEmpty(toast)) {
+    //     let counts1: number = 0;
+    //     BackHandler.addEventListener('hardwareBackPress', () => {
+    //       if (counts1 > 0) BackHandler.exitApp();
+    //       counts1++;
+    //       toast.show(
+    //         'برای بستن برنامه، دوبار برگشت بزنید',
+    //         toastCustom().toastInfo,
+    //       );
+    //       setTimeout(() => (counts1 = 0), 1000);
+    //       return true;
+    //     });
+    //   }
+    // }, [toast]);
 
     async function logout() {
       await AsyncStorage.removeItem('saba2token');

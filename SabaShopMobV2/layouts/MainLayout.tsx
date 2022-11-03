@@ -6,6 +6,7 @@ import {
   View,
   Dimensions,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -242,9 +243,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   childrenContainer: {
-    height: MainScreen.height,
+    height: MainScreen.height - 60,
     width: MainScreen.width,
-    backgroundColor: 'red',
   },
 });
 export default _MainLayout;

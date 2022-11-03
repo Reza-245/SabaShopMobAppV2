@@ -47,12 +47,6 @@ const Favorite = () => {
 
     return (
       <View style={styles.favoriteView}>
-        <View style={styles.favoriteTitleView}>
-          <Text style={styles.favoriteTitle}>نشان شده ها</Text>
-          <View style={styles.favoriteIconView}>
-            <AntDesign size={19} name="heart" color="#fff" />
-          </View>
-        </View>
         <View style={styles.favoriteContentLoadingView}>
           {loading ? (
             <MaterialIndicator
@@ -68,66 +62,74 @@ const Favorite = () => {
               />
             </View>
           ) : (
-            <ScrollView style={styles.favoriteContentView}>
-              {favProducts?.map((Fav, index) => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigate.navigate('PRODUCT_SELF', {
-                      product: Fav,
-                    })
-                  }
-                  key={index}
-                  activeOpacity={0.8}
-                  style={styles.favoriteContentItemView}>
-                  <View style={styles.favoriteContentItemNavView}>
-                    <TouchableOpacity
-                      activeOpacity={0.5}
-                      onPress={() => handleDeleteFavorite(Fav.id)}
-                      style={styles.favoriteContentItemNavStatusView}>
-                      <Ionicons
-                        name="close"
-                        color={SabaColors.sabaRed}
-                        size={17}
-                      />
-                    </TouchableOpacity>
-                    <View style={styles.favoriteContentItemNavIconView}>
-                      <Text style={styles.favoriteContentItemNavIconText}>
-                        موجود
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.favoriteContentItemArticleView}>
-                    <View style={styles.favoriteContentItemInfoView}>
-                      <Text style={styles.favoriteContentItemInfoTitle}>
-                        {Fav.nam}
-                      </Text>
-                      <Text style={styles.favoriteContentItemInfoPrice}>
-                        قیمت نقدی {Fav.price} تومان
-                      </Text>
-                      <Text style={styles.favoriteContentItemInfoPrice}>
-                        قیمت چکی {Fav.price1} تومان
-                      </Text>
-                    </View>
-                    <View style={styles.favoriteContentItemImageView}>
-                      {!isEmpty(Fav.pic_path) ? (
-                        <Image
-                          style={styles.favoriteContentItemImage}
-                          source={{uri: endpoints.URL + Fav.pic_path}}
+            <>
+              <View style={styles.favoriteTitleView}>
+                <Text style={styles.favoriteTitle}>نشان شده ها</Text>
+                <View style={styles.favoriteIconView}>
+                  <AntDesign size={19} name="heart" color="#fff" />
+                </View>
+              </View>
+              <ScrollView style={styles.favoriteContentView}>
+                {favProducts?.map((Fav, index) => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigate.navigate('PRODUCT_SELF', {
+                        product: Fav,
+                      })
+                    }
+                    key={index}
+                    activeOpacity={0.8}
+                    style={styles.favoriteContentItemView}>
+                    <View style={styles.favoriteContentItemNavView}>
+                      <TouchableOpacity
+                        activeOpacity={0.5}
+                        onPress={() => handleDeleteFavorite(Fav.id)}
+                        style={styles.favoriteContentItemNavStatusView}>
+                        <Ionicons
+                          name="close"
+                          color={SabaColors.sabaRed}
+                          size={17}
                         />
-                      ) : (
-                        <Image
-                          style={{
-                            ...styles.favoriteContentItemImage,
-                            opacity: 0.6,
-                          }}
-                          source={require('../assets/img/noneimage.png')}
-                        />
-                      )}
+                      </TouchableOpacity>
+                      <View style={styles.favoriteContentItemNavIconView}>
+                        <Text style={styles.favoriteContentItemNavIconText}>
+                          موجود
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                    <View style={styles.favoriteContentItemArticleView}>
+                      <View style={styles.favoriteContentItemInfoView}>
+                        <Text style={styles.favoriteContentItemInfoTitle}>
+                          {Fav.nam}
+                        </Text>
+                        <Text style={styles.favoriteContentItemInfoPrice}>
+                          قیمت نقدی {Fav.price} تومان
+                        </Text>
+                        <Text style={styles.favoriteContentItemInfoPrice}>
+                          قیمت چکی {Fav.price1} تومان
+                        </Text>
+                      </View>
+                      <View style={styles.favoriteContentItemImageView}>
+                        {!isEmpty(Fav.pic_path) ? (
+                          <Image
+                            style={styles.favoriteContentItemImage}
+                            source={{uri: endpoints.URL + Fav.pic_path}}
+                          />
+                        ) : (
+                          <Image
+                            style={{
+                              ...styles.favoriteContentItemImage,
+                              opacity: 0.6,
+                            }}
+                            source={require('../assets/img/noneimage.png')}
+                          />
+                        )}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
           )}
         </View>
       </View>

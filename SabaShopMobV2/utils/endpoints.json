@@ -1,5 +1,5 @@
 {
-  "URL": "http://192.168.1.137:3000/",
+  "URL": "http://5.202.251.165:4545/",
   "getProducts": "api/getproduct",
   "getFirstProducts": "api/getfirstproducts",
   "getNewestProducts": "api/getnewestproducts",

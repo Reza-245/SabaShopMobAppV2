@@ -408,7 +408,6 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
   shopView: {
-    backgroundColor: SabaColors.sabaWhite,
     height: '100%',
   },
   shopBasketNotImageView: {
@@ -569,6 +568,7 @@ const styles = StyleSheet.create({
     textShadowColor: SabaColors.sabaDarkGary,
     textShadowRadius: 9,
     color: SabaColors.sabaBlack,
+    textAlign: 'right',
   },
   shopBasketContentDetailsPrice: {
     fontFamily: 'shabnam',

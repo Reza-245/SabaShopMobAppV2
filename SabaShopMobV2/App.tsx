@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import ErrorConnectionLayout from './layouts/ErrorConnectionLayout';
 import ErrorLayout from './layouts/ErrorLayout';
-const MainWindow = Dimensions.get('screen');
+const MainWindow = Dimensions.get('window');
 const App = () => {
   I18nManager.allowRTL(false);
   try {
@@ -24,14 +24,14 @@ const App = () => {
     const [isConnected, setIsConnected] = useState<boolean>(true);
     const Stack = createStackNavigator();
     useEffect(() => {
-      setInterval(
-        async () =>
-          await axios
-            .get(endpoints.checkConnection)
-            .then(() => setIsConnected(true))
-            .catch(() => setIsConnected(false)),
-        3000,
-      );
+      // setInterval(
+      //   async () =>
+      //     await axios
+      //       .get(endpoints.checkConnection)
+      //       .then(() => setIsConnected(true))
+      //       .catch(() => setIsConnected(false)),
+      //   3000,
+      // );
       (async () => {
         const sabaShopV2Token = await AsyncStorage.getItem('saba2token');
         if (sabaShopV2Token) setInitRouteName('MAIN');
@@ -40,8 +40,7 @@ const App = () => {
     }, []);
     if (initRouteName === null) return null;
     return (
-      <SafeAreaView
-        style={{height: MainWindow.height - StatusBar.currentHeight}}>
+      <SafeAreaView style={{height: MainWindow.height, backgroundColor: 'red'}}>
         <NavigationContainer>
           <ToastProvider offsetTop={50}>
             <Stack.Navigator
@@ -53,7 +52,7 @@ const App = () => {
               <Stack.Screen name="LOGIN" component={Login} />
             </Stack.Navigator>
           </ToastProvider>
-          {!isConnected && <ErrorConnectionLayout />}
+          {/* {!isConnected && <ErrorConnectionLayout />} */}
         </NavigationContainer>
       </SafeAreaView>
     );
