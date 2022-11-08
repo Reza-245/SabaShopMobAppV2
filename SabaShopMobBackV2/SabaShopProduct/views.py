@@ -31,20 +31,20 @@ from django.conf import settings
 #     if q:
 #         query = unicodeConverter(q)
 #         # products = Product.objects.filter(idanbar=1,stut=0,unam__contains=query).all()[:100]
-#         products = Product.objects.raw(f"exec queries @st=1,@unam={query}")
+#         products = Product.objects.raw(f"exec store @st=1,@unam={query}")
 #     else:
 #         if groupid2:
 #             # products = Product.objects.filter(groupid=groupid,groupid2=groupid2,idanbar=1,stut=0).order_by("unam").all()[:100]
-#             products = Product.objects.raw(f"exec queries @st=4,@unam={query},@groupid={groupid},@groupid2={groupid2}, @idanbar=1,@stut=0")
+#             products = Product.objects.raw(f"exec store @st=4,@unam={query},@groupid={groupid},@groupid2={groupid2}, @idanbar=1,@stut=0")
           
 #         elif groupid:
 #             # products = Product.objects.filter(groupid=groupid,idanbar=1,stut=0).order_by("unam").all()[:100]
 
-#             products = Product.objects.raw(f"exec queries @st=5,@unam={query},@groupid={groupid}, @idanbar=1,@stut=0")
+#             products = Product.objects.raw(f"exec store @st=5,@unam={query},@groupid={groupid}, @idanbar=1,@stut=0")
 
 #         else:
 #             #  products = Product.objects.order_by("unam").all()[:100]
-#              Product.objects.raw("exec queries @st=6")
+#              Product.objects.raw("exec store @st=6")
 #     PSER = ProductSerializer(products,many=True)
 #     return Response(PSER.data,status=status.HTTP_200_OK)
 
@@ -59,18 +59,18 @@ def getProduct(request,groupid=0,groupid2=0):
             q = numberConverter(q)
         # query = unicodeConverter(q)
         # products = Product.objects.filter(idanbar=1,stut=0,unam__contains=query).all()[:100]
-        products = Product.objects.raw(f"exec queries @st=1,@unam={q}")
+        products = Product.objects.raw(f"exec store @st=1,@unam={q}")
     else:
         if groupid2:
             # products = Product.objects.filter(groupid=groupid,groupid2=groupid2,idanbar=1,stut=0).order_by("unam").all()[:100]
-            products = Product.objects.raw(f"exec queries @st=9,@idgroup={groupid},@idgroup2={groupid2}")
+            products = Product.objects.raw(f"exec store @st=9,@idgroup={groupid},@idgroup2={groupid2}")
         elif groupid:
             # products = Product.objects.filter(groupid=groupid,idanbar=1,stut=0).order_by("unam").all()[:100]
-            products = Product.objects.raw(f"exec queries @st=4,@idgroup={groupid}")
+            products = Product.objects.raw(f"exec store @st=4,@idgroup={groupid}")
 
         else:
             #  products = Product.objects.order_by("unam").all()[:100]
-            products = Product.objects.raw(f"exec queries @st=1")
+            products = Product.objects.raw(f"exec store @st=1")
 
     PSER = ProductSerializer(products,many=True)
     return Response(PSER.data,status=status.HTTP_200_OK)
@@ -81,7 +81,7 @@ def getProductBarcode(request):
     q = request.GET.get("q")
     # products = Product.objects.filter(barcod__exact=q).all()[:100]
     Englishlized_number = numberConverter(q)
-    products = Product.objects.raw(f"exec queries @st=3,@barcod={Englishlized_number}")
+    products = Product.objects.raw(f"exec store @st=3,@barcod={Englishlized_number}")
     PSER = ProductSerializer(products,many=True)
     return Response(PSER.data,status=status.HTTP_200_OK)
 
@@ -196,7 +196,7 @@ def putProduct(request,pk):
         # data = request.FILES['pic_path']
         # path = default_storage.save(f'products/{data.name}', ContentFile(data.read()))
         # os.path.join(settings.MEDIA_ROOT, path)
-        # query = f"exec queries @st=8, @pic_path=N'products/{data.name}', @idprc={idprc}"
+        # query = f"exec store @st=8, @pic_path=N'products/{data.name}', @idprc={idprc}"
         # cursor.execute(query)
         # cursor.close() 
         # PSER.data["pic_path"] = path

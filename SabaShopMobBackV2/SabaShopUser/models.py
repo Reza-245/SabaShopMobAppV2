@@ -16,7 +16,7 @@ class CustomerUser(models.Model):
     adr = models.CharField(max_length=150)
     is_valid = models.BooleanField()
     class Meta:
-        db_table="webcast"
+        db_table="webcast_store"
 
 
 
