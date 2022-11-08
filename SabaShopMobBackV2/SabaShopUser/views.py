@@ -96,20 +96,10 @@ def getCustomers(request):
 # def putProduct(request):
 #     pass
 # * Sending SMS ----------------------------------------->
-BaseAddress = "http://www.payamak.vip/api/v1/RestWebApi/"
-
-
 @api_view(['POST'])
 def sendmessage(request):
+    toNumber = request.data.get("mobileNumber")
     smsCode = request.data.get("codeContent")
-    url=BaseAddress+'SendBatchSms'
-    data={'userName': "mc.09332951900" ,
-          'password': "rnk$980",
-          'fromNumber':'10009611',
-          'toNumbers':request.data.get("mobileNumber"),
-          'messageContent':f"کد بازیابی شما برای ورود : {smsCode}",
-          'isFlash':False,
-          'sendDelay':0
-          }
-    response = requests.post(url,json=data,headers={"Content-Type": "application/json"})
+    url = f"https://login.niazpardaz.ir/SMSInOutBox/SendSms?username=mc.09332951900&password=rnk$980&from=10009611&to={toNumber}&text=کد بازیابی شما برای ورود : {smsCode}"
+    requests.get(url)
     return Response({"message":"ok"}, status=status.HTTP_200_OK)
