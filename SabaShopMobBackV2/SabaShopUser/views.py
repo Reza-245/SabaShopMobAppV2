@@ -96,8 +96,20 @@ def getCustomers(request):
 # def putProduct(request):
 #     pass
 # * Sending SMS ----------------------------------------->
+
 @api_view(['POST'])
 def sendmessage(request):
+    toNumber = request.data.get("mobileNumber")
+    smsCode = request.data.get("codeContent")
+    url = f"https://login.niazpardaz.ir/SMSInOutBox/SendSms?username=mc.09332951900&password=rnk$980&from=10009611&to={toNumber}&text=کد بازیابی شما برای ورود : {smsCode}"
+    requests.get(url)
+    return Response({"message":"ok"}, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(['POST'])
+def sendConfirmMessage(request):
     toNumber = request.data.get("mobileNumber")
     smsCode = request.data.get("codeContent")
     url = f"https://login.niazpardaz.ir/SMSInOutBox/SendSms?username=mc.09332951900&password=rnk$980&from=10009611&to={toNumber}&text=کد بازیابی شما برای ورود : {smsCode}"

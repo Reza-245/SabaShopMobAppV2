@@ -23,4 +23,4 @@ class Order(models.Model):
     idcast = models.IntegerField()
     iduser = models.IntegerField()
     class Meta:
-        db_table = "prctmp"
+        db_table = "prctmp2"
