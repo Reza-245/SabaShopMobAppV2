@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import createOrder,deleteProduct,getProduct,getHistoryOrder,getProductBarcode,putProduct,getFavorites,getSimilarProducts,getShopProducts,getNewestProducts,getFirstProducts
+from .views import createOrder,deleteProduct,getProduct,getHistoryOrder,getProductBarcode,putProduct,getFavorites,getSimilarProducts,getNewestProducts,getFirstProducts
 urlpatterns = [
     path("getproduct",getProduct),
     path("getproduct/<int:groupid>/<int:groupid2>",getProduct),
@@ -12,6 +12,6 @@ urlpatterns = [
     path("getnewestproducts",getNewestProducts),
     path("getfirstproducts",getFirstProducts),
     path("getfavs",getFavorites),
-    path("getshopproducts",getShopProducts),
+    path("getshopproducts",getFavorites),
   
     ]

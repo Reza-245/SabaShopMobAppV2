@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useMemo, useState, useEffect} from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
   SafeAreaView,
@@ -27,6 +27,7 @@ const App = () => {
   try {
     const toast = useToast();
     const [supportModal, setSupportModal] = useState<boolean>(false);
+    const [savedProfile, setSavedProfile] = useState<boolean>(false);
     const [nam, setNam] = useState<string>();
     const [tel, setTel] = useState<string>();
     const [codeGenerated, setCodeGenerated] = useState<number>(12);
@@ -52,6 +53,18 @@ const App = () => {
         setConfirmCode('');
       }
     }, [counter]);
+
+    useEffect(() => {
+      async function checkProfile() {
+        const profileData = await asyncStorage.getItem('profileData');
+        if (!isEmpty(profileData)) {
+          setNam(profileData?.split('|')[0]);
+          setTel(profileData?.split('|')[1]);
+          setSavedProfile(true);
+        }
+      }
+      checkProfile();
+    }, []);
     async function sendConfirmCode() {
       toast.show('درحال ارسال کد تاییدیه', toastCustom().info);
       resetTimer();
@@ -74,9 +87,16 @@ const App = () => {
         })
         .catch(() => {});
     }
+    async function handleExitCount() {
+      await asyncStorage.removeItem('profileData');
+      setNam('');
+      setTel('');
+      setSavedProfile(false);
+    }
     async function handleLogin() {
+
       setLoading(true);
-      if (codeGenerated === Number(confirmCode) && !loading) {
+      if ((codeGenerated === Number(confirmCode) || savedProfile) && !loading) {
         await axios
           .post(
             endpoints.login,
@@ -86,21 +106,21 @@ const App = () => {
             }),
           )
           .then(async ({data, status}) => {
+            console.log(status);
+
             if (status == 201) {
               toast.show(
                 'ثبت نام با موفقیت انجام شد تا تایید نهایی توسط کارشناسان لطفا صبور باشید',
                 toastCustom().successInfo,
               );
               setConfirmCode('');
-              setNam('');
-              setTel('');
               setConfirmCodeBool(false);
-            } else if (status == 204)
+            } else if (status == 204) {
               toast.show(
-                'شما هنوز از سمت کارشناسان تایید نشده اید باید صبور باشید',
+                'شما هنوز از سمت کارشناسان تایید نشده اید صبور باشید',
                 toastCustom().info,
               );
-            else {
+            } else {
               toast.show('خوش آمدید', toastCustom().success);
               await asyncStorage.setItem(
                 'saba2token',
@@ -108,7 +128,13 @@ const App = () => {
               );
               navigation.replace('MAIN');
             }
+            await asyncStorage.setItem('profileData', `${nam}|${tel}`);
+            setSavedProfile(true);
+            setSwitcher(false);
+            setCounter(0);
+            setConfirmCode('');
           })
+          .catch(err => console.log(err.name))
           .finally(() => setLoading(false));
       } else {
         toast.show('کد وارد شده صحیح نیست', toastCustom().danger);
@@ -156,12 +182,17 @@ const App = () => {
                 />
               </View>
               <View style={styles.loginFieldsView}>
-                <View style={styles.loginFieldItem}>
+                <View
+                  style={{
+                    ...styles.loginFieldItem,
+                    opacity: savedProfile ? 0.6 : 1,
+                  }}>
                   <TextInput
                     placeholder="نام و نام خانوادگی"
                     style={styles.loginFieldItemInput}
                     onChangeText={setNam}
                     value={nam}
+                    editable={!savedProfile}
                     placeholderTextColor={SabaColors.sabaDarkGary}
                   />
                   <View style={styles.loginFieldItemIconView}>
@@ -173,14 +204,14 @@ const App = () => {
                 <View
                   style={{
                     ...styles.loginFieldItem,
-                    opacity: isEmpty(nam) ? 0.6 : 1,
+                    opacity: isEmpty(nam) || savedProfile ? 0.6 : 1,
                   }}>
                   <TextInput
                     placeholder="شماره همراه"
                     style={styles.loginFieldItemInput}
                     onChangeText={value => setTel(value.replace(/[^0-9]/g, ''))}
                     keyboardType="number-pad"
-                    editable={!isEmpty(nam)}
+                    editable={!isEmpty(nam) && !savedProfile}
                     placeholderTextColor={SabaColors.sabaDarkGary}
                     value={tel}
                   />
@@ -197,19 +228,20 @@ const App = () => {
                 <View
                   style={{
                     ...styles.loginFieldItem,
-                    backgroundColor: !confirmCodeBool
-                      ? SabaColors.sabaDarkGary
-                      : '#fff',
+                    backgroundColor:
+                      !confirmCodeBool || savedProfile
+                        ? SabaColors.sabaDarkGary
+                        : '#fff',
                   }}>
                   <TextInput
                     placeholder="کد تاییدیه"
                     style={{
                       ...styles.loginFieldItemInput,
-                      opacity: !confirmCodeBool ? 0.6 : 1,
+                      opacity: !confirmCodeBool || savedProfile ? 0.6 : 1,
                     }}
                     placeholderTextColor={SabaColors.sabaDarkGary}
                     onChangeText={setConfirmCode}
-                    editable={confirmCodeBool}
+                    editable={confirmCodeBool && !savedProfile}
                     value={confirmCode}
                     keyboardType="number-pad"
                   />
@@ -218,7 +250,12 @@ const App = () => {
                     <TouchableOpacity
                       onPress={() => !switcher && sendConfirmCode()}
                       activeOpacity={0.5}
-                      disabled={isEmpty(nam) || isEmpty(tel) || confirmCodeBool}
+                      disabled={
+                        isEmpty(nam) ||
+                        isEmpty(tel) ||
+                        confirmCodeBool ||
+                        savedProfile
+                      }
                       style={{
                         ...styles.loginFieldItemIcon,
                         backgroundColor: SabaColors.sabaGold,
@@ -231,15 +268,24 @@ const App = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-
+                {savedProfile && (
+                  <TouchableOpacity
+                    onPress={handleExitCount}
+                    style={styles.loginFieldExit}>
+                    <Text style={styles.loginFieldExitText}>خروج از حساب</Text>
+                  </TouchableOpacity>
+                )}
                 <View style={styles.loginFieldItem}>
                   <TouchableOpacity
-                    onPress={() => confirmCodeBool && handleLogin()}
+                    onPress={() =>
+                      confirmCodeBool || savedProfile ? handleLogin() : null
+                    }
                     disabled={
-                      isEmpty(nam) ||
-                      isEmpty(tel) ||
-                      !confirmCodeBool ||
-                      isEmpty(confirmCode)
+                      (isEmpty(nam) ||
+                        isEmpty(tel) ||
+                        !confirmCodeBool ||
+                        isEmpty(confirmCode)) &&
+                      !savedProfile
                     }
                     style={styles.loginFieldItemButton}
                     activeOpacity={0.5}>
@@ -253,9 +299,9 @@ const App = () => {
                           ? 'شماره همراه را با صفر وارد کنید'
                           : tel?.length !== 11
                           ? 'شماره همراه باید 11 رقم باشد'
-                          : !isEmpty(tel) && !confirmCodeBool
+                          : !isEmpty(tel) && !confirmCodeBool && !savedProfile
                           ? 'برای ارسال کد تاییدیه روی کلید زرد کلیک کنید'
-                          : isEmpty(confirmCode)
+                          : isEmpty(confirmCode) && !savedProfile
                           ? 'کد تاییدیه را وارد کنید'
                           : 'درخواست ورود'}
                       </Text>
@@ -348,6 +394,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row-reverse',
   },
+  loginFieldExit: {
+    paddingHorizontal: 6,
+  },
+  loginFieldExitText: {
+    color: SabaColors.sabaWhite,
+    fontFamily: 'shabnamMed',
+    fontSize: 11,
+  },
+
   loginFieldItemInput: {
     fontFamily: 'shabnam',
     borderRadius: 50,
@@ -357,6 +412,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     color: SabaColors.sabaBlack,
   },
+
   loginFieldItemButton: {
     fontFamily: 'shabnam',
     borderRadius: 50,

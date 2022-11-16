@@ -14,8 +14,8 @@ class CustomerUser(models.Model):
     nam = models.CharField(max_length=50)
     tel = models.CharField(max_length=11)
     adr = models.CharField(max_length=150)
-    is_valid = models.BooleanField()
     dat = models.DateTimeField(auto_now_add=True)
+    is_valid = models.BooleanField()
     class Meta:
         db_table="webcast_store"
 

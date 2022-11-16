@@ -53,13 +53,14 @@ def getProduct(request,groupid=0,groupid2=0):
     # cursor.execute("call precedure name")
     # prcs =  cursor.fetchall()
     q = request.GET.get("q")
-
     if q:
         if q.isnumeric():
             q = numberConverter(q)
         # query = unicodeConverter(q)
         # products = Product.objects.filter(idanbar=1,stut=0,unam__contains=query).all()[:100]
+        # Englishlized_number = numberConverter(q)
         products = Product.objects.raw(f"exec store @st=1,@unam={q}")
+        
     else:
         if groupid2:
             # products = Product.objects.filter(groupid=groupid,groupid2=groupid2,idanbar=1,stut=0).order_by("unam").all()[:100]
@@ -71,6 +72,7 @@ def getProduct(request,groupid=0,groupid2=0):
         else:
             #  products = Product.objects.order_by("unam").all()[:100]
             products = Product.objects.raw(f"exec store @st=1")
+        
 
     PSER = ProductSerializer(products,many=True)
     return Response(PSER.data,status=status.HTTP_200_OK)
@@ -80,7 +82,10 @@ def getProduct(request,groupid=0,groupid2=0):
 def getProductBarcode(request):
     q = request.GET.get("q")
     # products = Product.objects.filter(barcod__exact=q).all()[:100]
+ 
     Englishlized_number = numberConverter(q)
+
+
     products = Product.objects.raw(f"exec store @st=3,@barcod={Englishlized_number}")
     PSER = ProductSerializer(products,many=True)
     return Response(PSER.data,status=status.HTTP_200_OK)
@@ -109,41 +114,27 @@ def getFavorites(request):
     favsList = FSER.data.get("favs")
     products = []
     for fav in favsList:
-        product = Product.objects.filter(id=fav,numb__gt=0).first()
-        if product:
-            products.append(product) 
-    return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
-
-
-
-@api_view(["POST"])
-def getShopProducts(request): 
-    FSER = FavSerializer(data=request.data)
-    FSER.is_valid()
-    favsList = FSER.data.get("favs")
-    products = []
-    for fav in favsList:
-        product = Product.objects.filter(id=fav,numb__gt=0).first()
+        product = Product.objects.filter(id=fav).first()
         if product:
             products.append(product) 
     return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 def getSimilarProducts(request,distinctId): 
-    products = Product.objects.filter(nam__contains=request.GET.get("similar"),numb__gt=0).exclude(id=distinctId).all()[:5]
+    products = Product.objects.filter(nam__contains=request.GET.get("similar")).exclude(id=distinctId).all()[:5]
     return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
 def getNewestProducts(request): 
-    products = Product.objects.order_by("-id").filter(numb__gt=0).all()[:5]
+    products = Product.objects.raw(f"exec store @st=10")
     return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
 
 
 
 @api_view(["GET"])
 def getFirstProducts(request): 
-    products = Product.objects.order_by("id").filter(numb__gt=0).all()[:5]
+    products = Product.objects.raw(f"exec store @st=11")
     return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
 
 
@@ -164,7 +155,7 @@ def createOrder(request):
             numb = order.get("numb")
             idcast = order.get("idcast")
             product = Product.objects.get(id=cod)
-            query = f"exec add_to_prctmp @cod={cod}, @numb={numb},@price={product.price}, @box={product.box}, @iduser={iduser} , @mainid={product.mainid}, @idcast={idcast} ,@idanbar={product.idanbar}"
+            query = f"exec add_to_prctmp_store @cod={cod}, @numb={numb},@price={product.price}, @box={product.box}, @iduser={iduser} , @mainid={product.mainid}, @idcast={idcast} ,@idanbar={product.idanbar}"
             cursor.execute(query)
         cursor.close()   
         return Response(

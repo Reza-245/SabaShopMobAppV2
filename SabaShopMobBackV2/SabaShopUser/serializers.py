@@ -19,4 +19,8 @@ class CustomerUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerUser
         fields =  ('nam',"tel",'id')
+
+    def create(self, validated_data):
+        validated_data["is_valid"] = False
+        return super().create(validated_data)
  

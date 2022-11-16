@@ -28,7 +28,7 @@ def checkConnection(request):
 #         password = U_SER.data.get("password")
 #         nam = U_SER.data.get("nam")
 #         # user = SUser.objects.filter(nam = U_SER.data.get("nam"),password=U_SER.data.get("password"),idprofile=14).first()
-#         user = SUser.objects.raw(f"exec queries @st=7, @pass={password},@nam={nam}")
+#         user = SUser.objects.raw(f"exec store @st=7, @pass={password},@nam={nam}")
 #         if user:
 #             SUSER_SER = SUserSerializer(data=user,many=True)
 #             SUSER_SER.is_valid()
@@ -74,10 +74,10 @@ def getCustomers(request):
     q = request.GET.get("q")
     if q:
         # customers = CustomerUser.objects.filter(unam__contains=query , idkol=1).all()
-        customers = CustomerUser.objects.raw(f"exec queries @st=2,@unam={q}")
+        customers = CustomerUser.objects.raw(f"exec store @st=2,@unam={q}")
     else:
         # customers = CustomerUser.objects.filter(idkol=1).all()
-        customers = CustomerUser.objects.raw("exec queries @st=2,@unam=''")
+        customers = CustomerUser.objects.raw("exec store @st=2,@unam=''")
     CSER = CustomerUserSerializer(customers,many=True)
     return Response(CSER.data,status=status.HTTP_200_OK)
 
@@ -106,12 +106,9 @@ def sendmessage(request):
     return Response({"message":"ok"}, status=status.HTTP_200_OK)
 
 
-
-
-@api_view(['POST'])
-def sendConfirmMessage(request):
-    toNumber = request.data.get("mobileNumber")
-    smsCode = request.data.get("codeContent")
-    url = f"https://login.niazpardaz.ir/SMSInOutBox/SendSms?username=mc.09332951900&password=rnk$980&from=10009611&to={toNumber}&text=کد بازیابی شما برای ورود : {smsCode}"
+@api_view(['GET'])
+def sendConfirmMessage(request,number):
+    url = f"https://login.niazpardaz.ir/SMSInOutBox/SendSms?username=mc.09332951900&password=rnk$980&from=10009611&to={number}&text=کد بازیابی شما برای ورود : {1234}"
     requests.get(url)
     return Response({"message":"ok"}, status=status.HTTP_200_OK)
+
