@@ -16,7 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {isEmpty} from 'lodash';
 import {useToast} from 'react-native-toast-notifications';
-import {toastCustom} from '../utils/toastCustom';
+import ToastCustom from '../utils/toastCustom';
 import asyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import endpoints from '../utils/endpoints.json';
@@ -66,7 +66,7 @@ const App = () => {
       checkProfile();
     }, []);
     async function sendConfirmCode() {
-      toast.show('درحال ارسال کد تاییدیه', toastCustom().info);
+      toast.show('درحال ارسال کد تاییدیه', ToastCustom.info);
       resetTimer();
       setConfirmCodeBool(true);
       const code = Math.round(Math.random() * (9999 - 1000) + 1000);
@@ -82,7 +82,7 @@ const App = () => {
         .then(() => {
           toast.show(
             'کد تاییدیه با موفقیت به شماره همراه شما ارسال شد',
-            toastCustom().success,
+            ToastCustom.success,
           );
         })
         .catch(() => {});
@@ -94,7 +94,6 @@ const App = () => {
       setSavedProfile(false);
     }
     async function handleLogin() {
-
       setLoading(true);
       if ((codeGenerated === Number(confirmCode) || savedProfile) && !loading) {
         await axios
@@ -106,22 +105,20 @@ const App = () => {
             }),
           )
           .then(async ({data, status}) => {
-            console.log(status);
-
             if (status == 201) {
               toast.show(
                 'ثبت نام با موفقیت انجام شد تا تایید نهایی توسط کارشناسان لطفا صبور باشید',
-                toastCustom().successInfo,
+                ToastCustom.successInfo,
               );
               setConfirmCode('');
               setConfirmCodeBool(false);
             } else if (status == 204) {
               toast.show(
                 'شما هنوز از سمت کارشناسان تایید نشده اید صبور باشید',
-                toastCustom().info,
+                ToastCustom.info,
               );
             } else {
-              toast.show('خوش آمدید', toastCustom().success);
+              toast.show('خوش آمدید', ToastCustom.success);
               await asyncStorage.setItem(
                 'saba2token',
                 `${data.nam}|${data.id}`,
@@ -137,7 +134,7 @@ const App = () => {
           .catch(err => console.log(err.name))
           .finally(() => setLoading(false));
       } else {
-        toast.show('کد وارد شده صحیح نیست', toastCustom().danger);
+        toast.show('کد وارد شده صحیح نیست', ToastCustom.danger);
         setLoading(false);
       }
     }

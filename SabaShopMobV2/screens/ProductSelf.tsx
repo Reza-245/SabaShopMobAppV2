@@ -21,7 +21,7 @@ import _ErrorLayout from '../layouts/ErrorLayout';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import axios from 'axios';
 import {isEmpty} from 'lodash';
-import {toastCustom} from '../utils/toastCustom';
+import ToastCustom from '../utils/toastCustom';
 import {useToast} from 'react-native-toast-notifications';
 import {favDeleter} from '../utils/favoriteDeleter';
 import {favoriteChacker} from '../utils/favoriteChecker';
@@ -35,7 +35,7 @@ const ProductSelf = ({route}: any) => {
     const toast = useToast();
     const {product} = route.params;
     const [favorites, setFavorites] = useState<number[]>();
-    const [similarProducts, setSimilarProducts] = useState();
+    const [similarProducts, setSimilarProducts] = useState<any[]>();
     const [order, setOrder] = useState<boolean>(false);
     const [ordered, setOrdered] = useState<boolean>(false);
     const [orderCount, setOrderCount] = useState<string>('0');
@@ -45,10 +45,10 @@ const ProductSelf = ({route}: any) => {
       else {
         if (orderCount > product.numb) {
           ActionShop('create_update', product.id, parseInt(product.numb));
-          toast.show('کالا به اندازه موجودی ثبت شد', toastCustom().success);
+          toast.show('کالا به اندازه موجودی ثبت شد', ToastCustom.success);
           setOrderCount(String(product.numb));
         } else {
-          toast.show('کالا ثبت شد', toastCustom().success);
+          toast.show('کالا ثبت شد', ToastCustom.success);
           ActionShop('create_update', product.id, parseInt(orderCount));
         }
         setOrdered(true);
@@ -78,7 +78,7 @@ const ProductSelf = ({route}: any) => {
       setOrdered(false);
       setOrder(false);
       setOrderCount('0');
-      toast.show('سفارش لغو شد', toastCustom().info);
+      toast.show('سفارش لغو شد', ToastCustom.info);
     }
     useFocusEffect(
       useCallback(() => {
@@ -200,6 +200,7 @@ const ProductSelf = ({route}: any) => {
                     <TextInput
                       value={orderCount}
                       editable={!ordered}
+                      keyboardType={'number-pad'}
                       style={{
                         ...styles.productInfoContentCounterMiddleInput,
                         color: ordered ? '#fff' : SabaColors.sabaDarkGary,

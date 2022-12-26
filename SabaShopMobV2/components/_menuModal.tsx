@@ -4,7 +4,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import {toastCustom} from '../utils/toastCustom';
+import ToastCustom from '../utils/toastCustom';
 import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
@@ -21,7 +21,7 @@ const _menuModal = ({supportModal, setSupportModal}: any) => {
     async function logout() {
       await AsyncStorage.removeItem('saba2token');
       navigate.replace('LOGIN');
-      toast.show('با موفقیت خارج شدید', toastCustom().info);
+      toast.show('با موفقیت خارج شدید', ToastCustom.info);
     }
     return (
       <Modal

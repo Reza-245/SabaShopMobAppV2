@@ -20,7 +20,7 @@ import endpoints from '../utils/endpoints.json';
 import {SkypeIndicator} from 'react-native-indicators';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useToast} from 'react-native-toast-notifications';
-import {toastCustom} from '../utils/toastCustom';
+import ToastCustom from '../utils/toastCustom';
 import {favDeleter} from '../utils/favoriteDeleter';
 import {favoriteChacker} from '../utils/favoriteChecker';
 import {MConverter} from '../utils/moneyConverter';
@@ -71,7 +71,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
               } else
                 toast.show(
                   'نمیتوان بیشتر از موجودی سفارش داد',
-                  toastCustom().info,
+                  ToastCustom.info,
                 );
 
               break;
@@ -153,11 +153,11 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
       ActionShop('delete', 0, 0, null, null, null, true);
       setProducts([]);
       setOrdersNumber(0);
-      toast.show('سبد حذف شد', toastCustom().info);
+      toast.show('سبد حذف شد', ToastCustom.info);
     }
 
     async function handleOrder() {
-      setOrdering(!ordering);
+      setOrdering(true);
       const customer = await AsyncStorage.getItem('saba2token');
       let orderObject: object[] = [];
       for (let ordered of products) {
@@ -169,6 +169,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
         };
         orderObject.push(order);
       }
+      console.log(orderObject);
       await axios
         .post(endpoints.finalSubmit, JSON.stringify(orderObject))
         .then(() => {
@@ -176,9 +177,12 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
           setOrdersNumber(0);
           setOrdering(false);
           setProducts([]);
-          toast.show('سبد با موفقیت ثبت شد', toastCustom().success);
+          toast.show('سبد با موفقیت ثبت شد', ToastCustom.success);
         })
-        .catch(() => {});
+        .catch(err => {
+          console.log(err);
+        })
+        .finally(() => setOrdering(false));
     }
     return (
       <View style={styles.shopView}>

@@ -1,5 +1,5 @@
 {
-  "URL": "http://5.202.251.165:4545/",
+  "URL": "http://192.168.1.20:4535/",
   "getProducts": "api/getproduct",
   "getFirstProducts": "api/getfirstproducts",
   "getNewestProducts": "api/getnewestproducts",
@@ -8,7 +8,8 @@
   "getShopProducts": "api/getshopproducts",
   "sendSms": "api/sendsabasms",
   "login": "api/loginshop",
-  "finalSubmit": "/api/createorder",
-  "getCategory1": "/api/getcategory1",
-  "checkConnection": "/api/checkconnection"
+  "finalSubmit": "api/createorder",
+  "getCategory1": "api/getcategory1",
+  "checkConnection": "api/checkconnection",
+  "getImageSlider": "api/getSliderImage"
 }

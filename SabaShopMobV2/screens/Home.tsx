@@ -28,7 +28,7 @@ const Home = () => {
   try {
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigation();
-    const [products, setProducts] = useState();
+    const [imageSliders, setImageSliders] = useState<any[]>([]);
     const [lastProducts, setLastProducts] = useState();
     const [categories, setCategories] = useState<any>();
     const [favorites, setFavorites] = useState<number[]>();
@@ -44,13 +44,18 @@ const Home = () => {
             .then(async ({data}: any) => {
               setLastProducts(data);
               await axios
-                .get(endpoints.getFirstProducts, AxiosConfigCancel)
+                .get(endpoints.getCategory1, AxiosConfigCancel)
                 .then(async ({data}: any) => {
-                  setProducts(data);
+                  setCategories(data);
                   await axios
-                    .get(endpoints.getCategory1, AxiosConfigCancel)
+                    .get(endpoints.getImageSlider, AxiosConfigCancel)
                     .then(({data}: any) => {
-                      setCategories(data);
+                      let images: any[] = [];
+                      data.map(img =>
+                        images.push({img: endpoints.URL + img.sliderImage}),
+                      );
+                      console.log(images);
+                      setImageSliders(images);
                     })
                     .catch(() => {});
                 })
@@ -78,21 +83,7 @@ const Home = () => {
               />
             ) : (
               <ImageSlider
-                data={[
-                  {
-                    img: require('../assets/img/slidertest.png'),
-                  },
-                  {
-                    img: require('../assets/img/slidertest4.png'),
-                  },
-                  {
-                    img: require('../assets/img/slidertest2.png'),
-                  },
-                  {
-                    img: require('../assets/img/slidertest3.png'),
-                  },
-                ]}
-                localImg={true}
+                data={imageSliders}
                 autoPlay={true}
                 timer={2000}
                 closeIconColor={SabaColors.sabaDarkGary}
@@ -115,6 +106,13 @@ const Home = () => {
               />
             )}
           </View>
+          <View style={styles.HomeContentConatiner}>
+            <_productCard
+              loading={loading}
+              products={lastProducts}
+              title={'جدیدترین ها'}
+            />
+          </View>
           <View style={styles.HomeMenuView}>
             {loading ? (
               <MaterialIndicator
@@ -135,7 +133,7 @@ const Home = () => {
                     <View style={styles.HomeMenuItemImageView}>
                       <Image
                         style={styles.HomeMenuItemImage}
-                        source={require('../assets/img/cate.png')}
+                        source={{uri: endpoints.URL + cat.pic_path}}
                       />
                     </View>
                     <View style={styles.HomeMenuItemImageTitleView}>
@@ -147,18 +145,6 @@ const Home = () => {
                 ))}
               </ScrollView>
             )}
-          </View>
-          <View style={styles.HomeContentConatiner}>
-            <_productCard
-              loading={loading}
-              products={lastProducts}
-              title={'جدیدترین ها'}
-            />
-            <_productCard
-              loading={loading}
-              products={products}
-              title={'آخرین محصولات'}
-            />
           </View>
         </ScrollView>
       </View>
@@ -178,7 +164,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   HomeMenuView: {
-    height: 114,
+    height: 144,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -187,8 +173,8 @@ const styles = StyleSheet.create({
   },
   HomeMenuScrollView: {},
   HomeMenuItemView: {
-    height: 90,
-    width: 90,
+    height: 120,
+    width: 120,
     marginHorizontal: 4,
     borderRadius: 8,
     position: 'relative',

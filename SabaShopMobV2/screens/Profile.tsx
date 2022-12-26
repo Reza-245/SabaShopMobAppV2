@@ -17,7 +17,7 @@ import {
 } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useToast} from 'react-native-toast-notifications';
-import {toastCustom} from '../utils/toastCustom';
+import ToastCustom from '../utils/toastCustom';
 import _ErrorLayout from '../layouts/ErrorLayout';
 import {useCallback, useEffect} from 'react';
 import {isEmpty} from 'lodash';
@@ -37,7 +37,7 @@ const Profile = () => {
     //       counts1++;
     //       toast.show(
     //         'برای بستن برنامه، دوبار برگشت بزنید',
-    //         toastCustom().toastInfo,
+    //         ToastCustom.toastInfo,
     //       );
     //       setTimeout(() => (counts1 = 0), 1000);
     //       return true;
@@ -48,7 +48,7 @@ const Profile = () => {
     async function logout() {
       await AsyncStorage.removeItem('saba2token');
       navigate.replace('LOGIN');
-      toast.show('با موفقیت خارج شدید', toastCustom().info);
+      toast.show('با موفقیت خارج شدید', ToastCustom.info);
     }
     return (
       <>
