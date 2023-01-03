@@ -24,3 +24,25 @@ class Order(models.Model):
     iduser = models.IntegerField()
     class Meta:
         db_table = "prctmp"
+
+
+class sliderImage(models.Model):
+    sliderImage = models.ImageField(max_length=250,null=True,upload_to="sliderImage")
+    class Meta:
+        db_table = "slider_store"
+
+
+
+
+class Factor(models.Model):
+    nam = models.CharField(max_length=250,null=True)
+    kalanam = models.CharField(max_length=250,null=True)
+    idcast = models.IntegerField()
+    codekala = models.IntegerField()
+    dat = models.DateTimeField()
+    tim = models.DateTimeField()
+    numb = models.DecimalField(max_digits=21,decimal_places=6)
+    price = models.DecimalField(max_digits=21,decimal_places=6)
+    ptk = models.DecimalField(max_digits=21,decimal_places=6)
+    class Meta:
+        db_table = "web_factor"

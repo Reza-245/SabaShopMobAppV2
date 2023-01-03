@@ -1,10 +1,8 @@
-import datetime
-from itertools import product 
-from pyexpat import model
+
 from rest_framework import serializers
 
 from SabaShopUser.models import CustomerUser, SUser, UserSetting
-from .models import Product,Order
+from .models import Product,Order,sliderImage,Factor
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +24,18 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 
+class SliderImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = sliderImage
+        fields = "__all__"
 
+
+
+
+class FactorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Factor
+        fields = "__all__"
 
 
 
@@ -49,12 +58,6 @@ class HistoryOrderSerializer(serializers.ModelSerializer):
         order["product"] = product.nam
         order["customer"] = customer.nam
         return order
-
-
-
-class FavSerializer(serializers.Serializer):
-    favs = serializers.CharField()
-    
 
 
 

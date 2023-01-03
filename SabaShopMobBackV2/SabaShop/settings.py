@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-7emtqv#e$ik5bh4xkvqg7t@@2go&(s4mt17f9h*8+4n0s!koce
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.150","127.0.0.1","5.202.251.165"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -109,7 +109,7 @@ DATABASES = {
     'default': {
         'NAME': 'userpda1',
         'ENGINE': 'mssql',
-        'HOST': 'PC2\SERVER_SABA',
+        'HOST': 'DESKTOP-0BES37O\SERVER_SABA',
         'USER': 'sa',
         'PASSWORD': '_*_100',
         'OPTIONS': {
@@ -205,7 +205,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = "assets"
-MEDIA_ROOT = "../sabapayton/static"
+MEDIA_ROOT = "../sabashopmob/static"
 MEDIA_URL = "media/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

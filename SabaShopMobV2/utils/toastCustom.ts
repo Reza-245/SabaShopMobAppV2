@@ -10,12 +10,10 @@ const ToastCustome: any = {
     animationType: 'zoom-in',
     textStyle: {
       fontFamily: 'shabnam',
-      color: '#2eff00',
+      color: '#fff',
     },
     style: {
-      backgroundColor: Colors.sabaBlack,
-      borderWidth: 1,
-      borderColor: '#2eff00',
+      backgroundColor: Colors.sabaGreen,
     },
   },
   successInfo: {
@@ -40,12 +38,10 @@ const ToastCustome: any = {
     animationType: 'slide-in',
     textStyle: {
       fontFamily: 'shabnam',
-      color: 'red',
+      color: Colors.sabaWhite,
     },
     style: {
-      backgroundColor: Colors.sabaBlack,
-      borderWidth: 1,
-      borderColor: 'red',
+      backgroundColor: Colors.sabaRed,
     },
   },
   info: {

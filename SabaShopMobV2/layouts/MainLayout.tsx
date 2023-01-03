@@ -9,6 +9,7 @@ import {
   StatusBar,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -16,20 +17,18 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import Profile from '../screens/Profile';
 import _menuModal from '../components/_menuModal';
-import Favorite from '../screens/Favorite';
-import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Shop from '../screens/Shop';
 import Home from '../screens/Home';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ActionShop} from '../realm/ActionShop';
 import _ErrorLayout from './ErrorLayout';
-const _MainLayout = () => {
+import ResCalculator from '../utils/responsiv/Responsiv';
+const _MainLayout = ({ordersNumber, setOrdersNumber}: any) => {
   try {
-    const Tab = createMaterialTopTabNavigator();
     const [supportModal, setSupportModal] = useState<boolean>(false);
     const [customerName, setCustomerName] = useState<string>();
-    const [ordersNumber, setOrdersNumber] = useState<number>();
+
     useFocusEffect(
       useCallback(() => {
         async function getData() {
@@ -47,6 +46,19 @@ const _MainLayout = () => {
           supportModal={supportModal}
           setSupportModal={setSupportModal}
         />
+
+        <TouchableOpacity
+          onPress={() => navigate.navigate('SHOP')}
+          activeOpacity={0.5}
+          style={styles.shopBadgeView}>
+          <FontAwesome5 color="#fff" size={23} name="shopping-cart" />
+          {ordersNumber !== 0 && (
+            <View style={styles.shopBadgeItemView}>
+              <Text style={styles.shopBadgeText}>{ordersNumber}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         <View style={styles.MenuNavigatorView}>
           <View style={styles.MenuNavigatorRightView}>
             <TouchableOpacity
@@ -71,102 +83,25 @@ const _MainLayout = () => {
               <Feather
                 style={{marginLeft: 8}}
                 color="#fff"
-                size={22}
+                size={24}
                 name="search"
               />
             </TouchableOpacity>
-
-            <FontAwesome5
-              style={{marginLeft: 6}}
-              color="#fff"
-              size={22}
-              name="bell"
-            />
+            <TouchableOpacity
+              // onPress={() => navigate.navigate('SHOP')}
+              activeOpacity={0.5}
+              style={styles.bellBadgeView}>
+              <MaterialCommunityIcons color="#fff" size={26} name="bell" />
+              {/* {ordersNumber === 0 && (
+                <View style={styles.bellBadgeItemView}>
+                  <Text style={styles.bellBadgeText}>{ordersNumber}</Text>
+                </View>
+              )} */}
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.childrenContainer}>
-          <Tab.Navigator
-            initialRouteName="PROFILE"
-            screenOptions={({route}) => ({
-              tabBarIcon: ({focused, color}) => {
-                let icon;
-                if (route.name === 'PROFILE') {
-                  icon = focused ? (
-                    <FontAwesome5 name="user-alt" size={23} color="#fff" />
-                  ) : (
-                    <FontAwesome5
-                      style={{opacity: 0.6}}
-                      name="user-alt"
-                      size={23}
-                      color="#fff"
-                    />
-                  );
-                } else if (route.name === 'FAVORITE') {
-                  icon = focused ? (
-                    <AntDesign name="heart" size={23} color="#fff" />
-                  ) : (
-                    <AntDesign
-                      name="heart"
-                      size={23}
-                      style={{opacity: 0.6}}
-                      color="#fff"
-                    />
-                  );
-                } else if (route.name === 'SHOP') {
-                  icon = focused ? (
-                    <Fontisto name="shopping-basket" size={23} color="#fff" />
-                  ) : (
-                    <Fontisto
-                      name="shopping-basket"
-                      size={23}
-                      style={{opacity: 0.6}}
-                      color="#fff"
-                    />
-                  );
-                } else if (route.name === 'HOMENAV') {
-                  icon = focused ? (
-                    <Entypo name="shop" size={26} color="#fff" />
-                  ) : (
-                    <Entypo
-                      name="shop"
-                      size={26}
-                      style={{opacity: 0.6}}
-                      color="#fff"
-                    />
-                  );
-                }
-                return icon;
-              },
-
-              tabBarShowLabel: false,
-              tabBarIndicatorStyle: {backgroundColor: '#fff'},
-              tabBarStyle: {
-                backgroundColor: SabaColors.sabaGreen,
-              },
-            })}>
-            <Tab.Screen name="PROFILE" component={Profile} />
-            <Tab.Screen name="FAVORITE" component={Favorite} />
-            <Tab.Screen
-              name="SHOP"
-              options={{
-                tabBarBadge: () =>
-                  ordersNumber ? (
-                    <View style={styles.shopBadgeView}>
-                      <View style={styles.shopBadgeItemView}>
-                        <Text style={styles.shopBadgeText}>{ordersNumber}</Text>
-                      </View>
-                    </View>
-                  ) : null,
-              }}>
-              {() => (
-                <Shop
-                  ordersNumber={ordersNumber}
-                  setOrdersNumber={setOrdersNumber}
-                />
-              )}
-            </Tab.Screen>
-            <Tab.Screen name="HOMENAV" component={Home} />
-          </Tab.Navigator>
+          <Home />
         </View>
       </>
     );
@@ -177,17 +112,24 @@ const _MainLayout = () => {
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
   MenuNavigatorView: {
-    backgroundColor: SabaColors.sabaGreen,
+    backgroundColor: SabaColors.sabaSlate,
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row-reverse',
   },
   shopBadgeView: {
-    width: MainScreen.width / 4,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingLeft: 32,
+    position: 'absolute',
+    bottom: 10,
+    left: 14,
+    backgroundColor: SabaColors.sabaSlate,
+    zIndex: 10,
+    height: 54,
+    width: 54,
+    borderRadius: 500,
+    paddingRight: 2,
   },
   shopBadgeItemView: {
     backgroundColor: SabaColors.sabaIndigo,
@@ -198,8 +140,34 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     elevation: 4,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    transform: [{translateY: -5}, {translateX: 5}],
   },
   shopBadgeText: {
+    fontSize: 10,
+    fontFamily: 'shabnamMed',
+    color: '#fff',
+  },
+  bellBadgeView: {
+    justifyContent: 'center',
+  },
+  bellBadgeItemView: {
+    backgroundColor: SabaColors.sabaRed,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 100,
+    padding: 3,
+    width: 22,
+    height: 22,
+    elevation: 4,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    transform: [{translateY: -10}, {translateX: 10}],
+  },
+  bellBadgeText: {
     fontSize: 10,
     fontFamily: 'shabnamMed',
     color: '#fff',
@@ -223,14 +191,12 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   MenuNavigatorRightTitleText: {
-    fontSize: 13,
+    fontSize: ResCalculator(610, 11, 13),
     fontFamily: 'shabnamMed',
     color: '#fff',
-    textShadowRadius: 4,
-    textShadowColor: SabaColors.sabaGray,
   },
   MenuNavigatorRightTitleCustomerText: {
-    fontSize: 10,
+    fontSize: ResCalculator(610, 10, 13),
     fontFamily: 'shabnam',
     color: '#fff',
   },

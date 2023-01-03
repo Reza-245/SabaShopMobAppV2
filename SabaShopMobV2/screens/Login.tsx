@@ -23,6 +23,8 @@ import endpoints from '../utils/endpoints.json';
 import {useNavigation} from '@react-navigation/native';
 import {MaterialIndicator} from 'react-native-indicators';
 import _ErrorLayout from '../layouts/ErrorLayout';
+import ResCalculator from '../utils/responsiv/Responsiv';
+import mainHeight from '../utils/responsiv/MainScreen';
 const App = () => {
   try {
     const toast = useToast();
@@ -65,13 +67,13 @@ const App = () => {
       }
       checkProfile();
     }, []);
-    async function sendConfirmCode() {
+    function sendConfirmCode() {
       toast.show('درحال ارسال کد تاییدیه', ToastCustom.info);
       resetTimer();
       setConfirmCodeBool(true);
       const code = Math.round(Math.random() * (9999 - 1000) + 1000);
       setCodeGenerated(code);
-      await axios
+      axios
         .post(
           endpoints.sendSms,
           JSON.stringify({
@@ -87,16 +89,16 @@ const App = () => {
         })
         .catch(() => {});
     }
-    async function handleExitCount() {
-      await asyncStorage.removeItem('profileData');
+    function handleExitCount() {
+      asyncStorage.removeItem('profileData');
       setNam('');
       setTel('');
       setSavedProfile(false);
     }
-    async function handleLogin() {
+    function handleLogin() {
       setLoading(true);
       if ((codeGenerated === Number(confirmCode) || savedProfile) && !loading) {
-        await axios
+        axios
           .post(
             endpoints.login,
             JSON.stringify({
@@ -131,7 +133,7 @@ const App = () => {
             setCounter(0);
             setConfirmCode('');
           })
-          .catch(err => console.log(err.name))
+          .catch()
           .finally(() => setLoading(false));
       } else {
         toast.show('کد وارد شده صحیح نیست', ToastCustom.danger);
@@ -143,15 +145,10 @@ const App = () => {
         <MenuModal
           supportModal={supportModal}
           setSupportModal={setSupportModal}
+          showMenu={false}
         />
         <View style={styles.loginPageContainer}>
           <View style={styles.loginNavigation}>
-            <View style={styles.loginNavigationImgView}>
-              <Image
-                source={require('../assets/img/sabaLogo.png')}
-                style={styles.loginNavigationImg}
-              />
-            </View>
             <View style={styles.loginNavigationInfoView}>
               <View style={styles.loginNavigationInfoNameView}>
                 <TouchableOpacity
@@ -164,7 +161,9 @@ const App = () => {
                   />
                 </TouchableOpacity>
 
-                <Text style={styles.loginNavigationInfoName}>فروشگاه صبا</Text>
+                <Text style={styles.loginNavigationInfoName}>
+                  بازرگانی آریــانــا
+                </Text>
               </View>
             </View>
           </View>
@@ -175,7 +174,7 @@ const App = () => {
               <View style={styles.loginIconView}>
                 <Image
                   style={styles.loginIcon}
-                  source={require('../assets/img/login/Shield.png')}
+                  source={require('../assets/img/AryanaLogo512.png')}
                 />
               </View>
               <View style={styles.loginFieldsView}>
@@ -190,7 +189,7 @@ const App = () => {
                     onChangeText={setNam}
                     value={nam}
                     editable={!savedProfile}
-                    placeholderTextColor={SabaColors.sabaDarkGary}
+                    placeholderTextColor={'rgba(140,140,140,0.8)'}
                   />
                   <View style={styles.loginFieldItemIconView}>
                     <View style={styles.loginFieldItemIcon}>
@@ -209,7 +208,7 @@ const App = () => {
                     onChangeText={value => setTel(value.replace(/[^0-9]/g, ''))}
                     keyboardType="number-pad"
                     editable={!isEmpty(nam) && !savedProfile}
-                    placeholderTextColor={SabaColors.sabaDarkGary}
+                    placeholderTextColor={'rgba(140,140,140,0.8)'}
                     value={tel}
                   />
                   <View style={styles.loginFieldItemIconView}>
@@ -227,8 +226,8 @@ const App = () => {
                     ...styles.loginFieldItem,
                     backgroundColor:
                       !confirmCodeBool || savedProfile
-                        ? SabaColors.sabaDarkGary
-                        : '#fff',
+                        ? SabaColors.sabaSlate2
+                        : SabaColors.sabaSlate2,
                   }}>
                   <TextInput
                     placeholder="کد تاییدیه"
@@ -236,7 +235,7 @@ const App = () => {
                       ...styles.loginFieldItemInput,
                       opacity: !confirmCodeBool || savedProfile ? 0.6 : 1,
                     }}
-                    placeholderTextColor={SabaColors.sabaDarkGary}
+                    placeholderTextColor={'rgba(140,140,140,0.8)'}
                     onChangeText={setConfirmCode}
                     editable={confirmCodeBool && !savedProfile}
                     value={confirmCode}
@@ -255,7 +254,7 @@ const App = () => {
                       }
                       style={{
                         ...styles.loginFieldItemIcon,
-                        backgroundColor: SabaColors.sabaGold,
+                        backgroundColor: SabaColors.sabaGreen,
                       }}>
                       {switcher ? (
                         <Text style={styles.loginTimer}>{counter}</Text>
@@ -297,7 +296,7 @@ const App = () => {
                           : tel?.length !== 11
                           ? 'شماره همراه باید 11 رقم باشد'
                           : !isEmpty(tel) && !confirmCodeBool && !savedProfile
-                          ? 'برای ارسال کد تاییدیه روی کلید زرد کلیک کنید'
+                          ? 'برای ارسال کد تاییدیه روی کلید سبز کلیک کنید'
                           : isEmpty(confirmCode) && !savedProfile
                           ? 'کد تاییدیه را وارد کنید'
                           : 'درخواست ورود'}
@@ -318,7 +317,7 @@ const App = () => {
 const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
   loginPageContainer: {
-    backgroundColor: SabaColors.sabaBlack,
+    backgroundColor: SabaColors.sabaSlate,
     height: MainScreen.height,
     width: MainScreen.width,
   },
@@ -329,21 +328,9 @@ const styles = StyleSheet.create({
     width: MainScreen.width,
     paddingVertical: 6,
   },
-  loginNavigationImgView: {
-    height: '100%',
-    resizeMode: 'contain',
-    width: '40%',
-    justifyContent: 'flex-start',
-    paddingLeft: 8,
-  },
-  loginNavigationImg: {
-    height: '100%',
-    resizeMode: 'contain',
-    width: '50%',
-  },
   loginNavigationInfoView: {
     height: '100%',
-    width: '60%',
+    width: '100%',
   },
   loginNavigationInfoNameView: {
     justifyContent: 'flex-start',
@@ -353,16 +340,14 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
   },
   loginNavigationInfoName: {
-    fontSize: 17,
+    fontSize: ResCalculator(610, 13, 17),
     fontFamily: 'shabnamMed',
     color: SabaColors.sabaWhite,
     marginRight: 12,
-    textShadowColor: SabaColors.sabaDarkGary,
-    textShadowRadius: 4,
   },
   // * ---------------------------------------------- Login --------------------------------------- // height (screenHeight-85)
   loginContainer: {
-    height: MainScreen.height - 85,
+    height: mainHeight,
     justifyContent: 'center',
   },
   loginView: {
@@ -383,7 +368,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
   loginFieldItem: {
-    backgroundColor: '#fff',
+    backgroundColor: SabaColors.sabaSlate2,
     width: '100%',
     height: 50,
     borderRadius: 50,
@@ -397,7 +382,7 @@ const styles = StyleSheet.create({
   loginFieldExitText: {
     color: SabaColors.sabaWhite,
     fontFamily: 'shabnamMed',
-    fontSize: 11,
+    fontSize: ResCalculator(610, 9, 11),
   },
 
   loginFieldItemInput: {
@@ -407,7 +392,9 @@ const styles = StyleSheet.create({
     width: '86%',
     textAlign: 'right',
     paddingHorizontal: 12,
-    color: SabaColors.sabaBlack,
+    color: SabaColors.sabaWhite,
+    backgroundColor: SabaColors.sabaSlate2,
+    fontSize: ResCalculator(610, 11, 14),
   },
 
   loginFieldItemButton: {
@@ -424,6 +411,7 @@ const styles = StyleSheet.create({
   loginFieldItemButtonText: {
     fontFamily: 'shabnamMed',
     color: SabaColors.sabaWhite,
+    fontSize: ResCalculator(610, 11, 14),
   },
   loginFieldItemIconView: {
     borderRadius: 25,
@@ -445,8 +433,6 @@ const styles = StyleSheet.create({
     color: SabaColors.sabaGreen,
     fontSize: 11,
     textAlign: 'center',
-    textShadowColor: SabaColors.sabaGreen,
-    textShadowRadius: 4,
   },
   loginTimer: {
     fontFamily: 'shabnamMed',

@@ -1,7 +1,3 @@
-export type TFavorite = {
-  _id: number;
-  pid: number;
-};
 export type TShop = {
   _id: number;
   orderedProducts: TProductCover[];

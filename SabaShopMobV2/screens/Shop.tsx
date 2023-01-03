@@ -13,7 +13,7 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import _ErrorLayout from '../layouts/ErrorLayout';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {isEmpty} from 'lodash';
 import axios from 'axios';
 import endpoints from '../utils/endpoints.json';
@@ -21,16 +21,16 @@ import {SkypeIndicator} from 'react-native-indicators';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useToast} from 'react-native-toast-notifications';
 import ToastCustom from '../utils/toastCustom';
-import {favDeleter} from '../utils/favoriteDeleter';
-import {favoriteChacker} from '../utils/favoriteChecker';
 import {MConverter} from '../utils/moneyConverter';
-import {FPListSchema, ProductCoverSchema} from '../realm/Models';
+import {ProductCoverSchema} from '../realm/Models';
 import {ActionShop} from '../realm/ActionShop';
 import {TProductCover, TProductServer} from '../utils/types';
+import ResCalculator from '../utils/responsiv/Responsiv';
+import mainHeight from '../utils/responsiv/MainScreen';
 const Shop = ({ordersNumber, setOrdersNumber}: any) => {
   try {
+    const navigate = useNavigation<any>();
     const [products, setProducts] = useState<TProductServerMixed[]>([]);
-    const [favorites, setFavorites] = useState<number[]>();
     const [loading, setLoading] = useState<boolean>(true);
     const [ordering, setOrdering] = useState<boolean>(false);
     const toast = useToast();
@@ -41,7 +41,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
     function handleEditPorduct(type: string, id: number) {
       const realm = new Realm({
         path: 'SabaShopV2DB',
-        schema: [ProductCoverSchema, FPListSchema],
+        schema: [ProductCoverSchema],
       });
       realm.write(() => {
         let productCover: TProductCover | any =
@@ -93,7 +93,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
         // ** favoritte
         const realm = new Realm({
           path: 'SabaShopV2DB',
-          schema: [ProductCoverSchema, FPListSchema],
+          schema: [ProductCoverSchema],
         });
 
         const ProductsMobile: TProductCover[] | any =
@@ -102,8 +102,8 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
         for (let pro of ProductsMobile)
           ProsMobile_ConvertedNumberList.push(pro.productId);
 
-        async function getData() {
-          await axios
+        function getData() {
+          axios
             .post(
               endpoints.getShopProducts,
               JSON.stringify({favs: ProsMobile_ConvertedNumberList}),
@@ -114,7 +114,9 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
               let _Products = [];
               if (ProductsMobile)
                 for (let pro of data) {
-                  let the_id = ProductsMobile.find(p => p.productId == pro.id);
+                  let the_id = ProductsMobile.find(
+                    (p: any) => p.productId == pro.id,
+                  );
                   pro.proNumbers = the_id?.orderCounts;
                   _Products.push(pro);
                 }
@@ -169,8 +171,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
         };
         orderObject.push(order);
       }
-      console.log(orderObject);
-      await axios
+      axios
         .post(endpoints.finalSubmit, JSON.stringify(orderObject))
         .then(() => {
           ActionShop('delete', 0, 0, null, null, null, true);
@@ -179,24 +180,32 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
           setProducts([]);
           toast.show('سبد با موفقیت ثبت شد', ToastCustom.success);
         })
-        .catch(err => {
-          console.log(err);
-        })
+        .catch()
         .finally(() => setOrdering(false));
     }
     return (
       <View style={styles.shopView}>
-        {isEmpty(products) ? (
-          <View style={styles.shopBasketNotImageView}>
-            <Image
-              style={styles.shopBasketNotImage}
-              source={require('../assets/img/shop/shopbasketnotfound.png')}
+        <View style={styles.shopNavback}>
+          <TouchableOpacity
+            onPress={() => navigate.goBack()}
+            activeOpacity={0.5}
+            style={styles.shopNavbackSelf}>
+            <AntDesign
+              color={SabaColors.sabaWhite}
+              size={26}
+              name="arrowleft"
             />
-          </View>
+          </TouchableOpacity>
+        </View>
+
+        {loading ? (
+          <SkypeIndicator size={60} color={SabaColors.sabaWhite} />
         ) : (
           <>
-            {loading ? (
-              <SkypeIndicator size={60} color={SabaColors.sabaIndigo} />
+            {isEmpty(products) ? (
+              <View style={styles.shopBasketNotView}>
+                <Text style={styles.shopBasketNotText}>سبد خریدی یافت نشد</Text>
+              </View>
             ) : (
               <>
                 <View style={styles.shopBasketView}>
@@ -270,32 +279,20 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                     {products &&
                       products.map((pro, index) => (
                         <View key={pro.id} style={styles.shopBasketItemView}>
-                          <View style={styles.shopBasketTopButtonView}>
-                            <TouchableOpacity
-                              style={styles.shopBasketRemoveButton}
-                              onPress={() => handleDeleteProduct(pro.id)}
-                              activeOpacity={0.5}>
-                              <FontAwesome5
-                                color={SabaColors.sabaRed}
-                                size={16}
-                                name="trash-alt"
-                              />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                              style={styles.shopBasketRemoveButton}
-                              onPress={() =>
-                                favDeleter(favorites, setFavorites, pro.id)
-                              }
-                              activeOpacity={0.5}>
-                              <AntDesign
-                                color={SabaColors.sabaRed}
-                                size={16}
-                                name={favoriteChacker(favorites, pro.id)}
-                              />
-                            </TouchableOpacity>
-                          </View>
                           <View style={styles.shopBasketContentView}>
                             <View style={styles.shopBasketContentDetailsView}>
+                              <View style={styles.shopBasketTopButtonView}>
+                                <TouchableOpacity
+                                  style={styles.shopBasketRemoveButton}
+                                  onPress={() => handleDeleteProduct(pro.id)}
+                                  activeOpacity={0.5}>
+                                  <FontAwesome5
+                                    color={SabaColors.sabaRed}
+                                    size={16}
+                                    name="trash-alt"
+                                  />
+                                </TouchableOpacity>
+                              </View>
                               <View
                                 style={styles.shopBasketContentDetailsTopView}>
                                 <Text
@@ -310,6 +307,55 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                                   style={styles.shopBasketContentDetailsPrice}>
                                   قیمت چکی {MConverter(pro.price1)} تومان
                                 </Text>
+                              </View>
+                              <View
+                                style={
+                                  styles.shopBasketContentWholePriceItemViewRight
+                                }>
+                                <View
+                                  style={
+                                    styles.shopBasketContentDetailsBottomView
+                                  }>
+                                  <TouchableOpacity
+                                    onPress={() =>
+                                      handleEditPorduct('plus', pro.id)
+                                    }
+                                    activeOpacity={0.5}
+                                    style={
+                                      styles.shopBasketContentDetailsBottomPlusView
+                                    }>
+                                    <FontAwesome5
+                                      name="plus"
+                                      color={SabaColors.sabaWhite}
+                                      size={ResCalculator(610, 14, 15.5)}
+                                    />
+                                  </TouchableOpacity>
+                                  <View
+                                    style={
+                                      styles.shopBasketContentDetailsInputView
+                                    }>
+                                    <TextInput
+                                      value={String(pro.proNumbers)}
+                                      style={
+                                        styles.shopBasketContentDetailsInput
+                                      }
+                                    />
+                                  </View>
+                                  <TouchableOpacity
+                                    onPress={() =>
+                                      handleEditPorduct('minus', pro.id)
+                                    }
+                                    activeOpacity={0.5}
+                                    style={
+                                      styles.shopBasketContentDetailsBottomMinusView
+                                    }>
+                                    <FontAwesome5
+                                      color={SabaColors.sabaWhite}
+                                      name="minus"
+                                      size={ResCalculator(610, 14, 15.5)}
+                                    />
+                                  </TouchableOpacity>
+                                </View>
                               </View>
                             </View>
                             <View style={styles.shopBasketContentImageView}>
@@ -327,71 +373,25 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                                   source={require('../assets/img/noneimage.png')}
                                 />
                               )}
-                            </View>
-                          </View>
-                          <View style={styles.shopBasketContentWholePriceView}>
-                            <View
-                              style={
-                                styles.shopBasketContentWholePriceItemViewRight
-                              }>
                               <View
-                                style={
-                                  styles.shopBasketContentDetailsBottomView
-                                }>
-                                <TouchableOpacity
-                                  onPress={() =>
-                                    handleEditPorduct('plus', pro.id)
-                                  }
-                                  activeOpacity={0.5}
-                                  style={
-                                    styles.shopBasketContentDetailsBottomPlusView
-                                  }>
-                                  <FontAwesome5
-                                    name="plus"
-                                    color={SabaColors.sabaWhite}
-                                    size={18}
-                                  />
-                                </TouchableOpacity>
+                                style={styles.shopBasketContentWholePriceView}>
                                 <View
                                   style={
-                                    styles.shopBasketContentDetailsInputView
+                                    styles.shopBasketContentWholePriceItemViewLeft
                                   }>
-                                  <TextInput
-                                    value={String(pro.proNumbers)}
-                                    style={styles.shopBasketContentDetailsInput}
-                                  />
+                                  <View
+                                    style={
+                                      styles.shopBasketContentWholePriceItemViewLeftView
+                                    }>
+                                    <Text
+                                      style={
+                                        styles.shopBasketContentWholePriceItemText
+                                      }>
+                                      جمع کل:{' '}
+                                      {MConverter(pro.proNumbers * pro.price)}
+                                    </Text>
+                                  </View>
                                 </View>
-                                <TouchableOpacity
-                                  onPress={() =>
-                                    handleEditPorduct('minus', pro.id)
-                                  }
-                                  activeOpacity={0.5}
-                                  style={
-                                    styles.shopBasketContentDetailsBottomMinusView
-                                  }>
-                                  <FontAwesome5
-                                    color={SabaColors.sabaWhite}
-                                    name="minus"
-                                    size={18}
-                                  />
-                                </TouchableOpacity>
-                              </View>
-                            </View>
-                            <View
-                              style={
-                                styles.shopBasketContentWholePriceItemViewLeft
-                              }>
-                              <View
-                                style={
-                                  styles.shopBasketContentWholePriceItemViewLeftView
-                                }>
-                                <Text
-                                  style={
-                                    styles.shopBasketContentWholePriceItemText
-                                  }>
-                                  جمع کل:{' '}
-                                  {MConverter(pro.proNumbers * pro.price)}
-                                </Text>
                               </View>
                             </View>
                           </View>
@@ -409,27 +409,35 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
     return <_ErrorLayout pageError="Shop" errorDes={err.message} />;
   }
 };
-const MainScreen = Dimensions.get('window');
 const styles = StyleSheet.create({
+  shopNavback: {
+    paddingHorizontal: 10,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    backgroundColor: SabaColors.sabaSlate,
+  },
+  shopNavbackSelf: {},
   shopView: {
     height: '100%',
+    backgroundColor: SabaColors.sabaSlate2,
   },
-  shopBasketNotImageView: {
-    flex: 1,
-    justifyContent: 'flex-end',
+  shopBasketNotView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: mainHeight - 40,
   },
-  shopBasketNotImage: {
-    resizeMode: 'contain',
-    width: '100%',
+  shopBasketNotText: {
+    color: SabaColors.sabaWhite,
+    fontFamily: 'shabnam',
+    fontSize: ResCalculator(610, 12.5, 16),
   },
   shopBasketView: {
-    backgroundColor: '#fff',
+    backgroundColor: SabaColors.sabaSlate,
     height: 225,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    elevation: 2,
-    borderBottomColor: SabaColors.sabaGray,
-    borderBottomWidth: 1,
+    elevation: 1,
   },
   shopBasketTitleView: {
     height: 45,
@@ -445,10 +453,8 @@ const styles = StyleSheet.create({
   },
   shopBasketTitleRightText: {
     fontFamily: 'shabnamMed',
-    fontSize: 14,
-    textShadowColor: SabaColors.sabaDarkGary,
-    textShadowRadius: 9,
-    color: SabaColors.sabaBlack,
+    fontSize: ResCalculator(610, 11, 14),
+    color: SabaColors.sabaWhite,
     marginRight: 5,
   },
   shopBasketTitleRightIconView: {
@@ -467,13 +473,13 @@ const styles = StyleSheet.create({
   shopBasketTitleLeftButtonView: {
     height: 28,
     width: 68,
-    backgroundColor: SabaColors.sabaLightRed,
+    backgroundColor: 'rgba(155,0,0,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   shopBasketTitleLeft: {
     fontFamily: 'shabnamMed',
-    fontSize: 11,
+    fontSize: ResCalculator(610, 10, 11),
     color: SabaColors.sabaRed,
   },
   shopBasketInfoView: {
@@ -487,17 +493,13 @@ const styles = StyleSheet.create({
   },
   shopBasketInfoDetailTextRight: {
     fontFamily: 'shabnamMed',
-    fontSize: 12,
-    textShadowColor: SabaColors.sabaDarkGary,
-    textShadowRadius: 9,
-    color: SabaColors.sabaBlack,
+    fontSize: ResCalculator(610, 10, 12),
+    color: SabaColors.sabaWhite,
   },
   shopBasketInfoDetailTextLeft: {
     fontFamily: 'shabnam',
-    fontSize: 12,
-    textShadowColor: SabaColors.sabaDarkGary,
-    textShadowRadius: 9,
-    color: SabaColors.sabaBlack,
+    fontSize: ResCalculator(610, 10, 12),
+    color: SabaColors.sabaWhite,
   },
   shopBasketButtonContentView: {
     flexDirection: 'row-reverse',
@@ -519,7 +521,7 @@ const styles = StyleSheet.create({
   },
   shopBasketButtonText: {
     fontFamily: 'shabnamMed',
-    fontSize: 12,
+    fontSize: ResCalculator(610, 10, 12),
     color: SabaColors.sabaWhite,
   },
   shopBasketButtonImageView: {
@@ -533,59 +535,57 @@ const styles = StyleSheet.create({
   },
   // * ------------------------------------- Items ---------------------------------
   shopBasketItemsView: {
-    height: MainScreen.height - 334,
+    height: mainHeight - 235,
     paddingHorizontal: 10,
   },
   shopBasketItemView: {
-    backgroundColor: '#fff',
-    height: 190,
+    backgroundColor: SabaColors.sabaSlate,
+    height: 150,
     borderRadius: 10,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
     marginVertical: 8,
     elevation: 3,
+    overflow: 'hidden',
   },
   shopBasketTopButtonView: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    marginBottom: 3,
   },
   shopBasketRemoveButton: {},
   shopBasketContentView: {
-    height: 120,
+    height: '100%',
     flexDirection: 'row-reverse',
   },
   shopBasketContentDetailsView: {
     flex: 2,
-    paddingTop: 6,
+    padding: 10,
   },
   shopBasketContentImageView: {
     flex: 1,
+    height: '100%',
+    position: 'relative',
   },
   shopBasketContentImage: {
-    resizeMode: 'contain',
+    resizeMode: 'stretch',
     width: '100%',
     height: '100%',
   },
   shopBasketContentDetailsTitle: {
     fontFamily: 'shabnamMed',
-    fontSize: 13,
-    textShadowColor: SabaColors.sabaDarkGary,
-    textShadowRadius: 9,
-    color: SabaColors.sabaBlack,
+    fontSize: ResCalculator(610, 11, 13),
+    color: SabaColors.sabaWhite,
     textAlign: 'right',
+    height: 38,
   },
   shopBasketContentDetailsPrice: {
     fontFamily: 'shabnam',
-    fontSize: 12,
-    textShadowColor: SabaColors.sabaDarkGary,
-    textShadowRadius: 9,
-    color: SabaColors.sabaDarkGary,
+    fontSize: ResCalculator(610, 10, 12),
+    color: SabaColors.sabaWhite,
   },
   shopBasketContentDetailsTopView: {
-    flex: 1,
+    height: 84,
   },
   shopBasketContentDetailsBottomView: {
-    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     flexDirection: 'row-reverse',
@@ -596,7 +596,6 @@ const styles = StyleSheet.create({
     height: 26,
     width: 26,
     backgroundColor: SabaColors.sabaGreen,
-    elevation: 2,
     borderRadius: 25,
   },
   shopBasketContentDetailsInputView: {
@@ -614,7 +613,7 @@ const styles = StyleSheet.create({
     padding: 0,
     textAlign: 'center',
     fontFamily: 'shabnamMed',
-    fontSize: 14,
+    fontSize: ResCalculator(610, 10, 14),
     color: '#fff',
   },
 
@@ -629,11 +628,14 @@ const styles = StyleSheet.create({
   },
   shopBasketContentWholePriceView: {
     height: 27,
-    flexDirection: 'row-reverse',
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(33,33,33,0.5)',
+    color: '#fff',
+    position: 'absolute',
+    width: '100%',
   },
-  shopBasketContentWholePriceItemViewRight: {
-    flex: 2,
-  },
+  shopBasketContentWholePriceItemViewRight: {},
 
   shopBasketContentWholePriceItemViewLeft: {
     justifyContent: 'center',
@@ -642,7 +644,6 @@ const styles = StyleSheet.create({
   },
   shopBasketContentWholePriceItemViewLeftView: {
     width: '100%',
-    backgroundColor: SabaColors.sabaDarkGary,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 25,
@@ -650,7 +651,7 @@ const styles = StyleSheet.create({
   },
   shopBasketContentWholePriceItemText: {
     fontFamily: 'shabnamMed',
-    fontSize: 12,
+    fontSize: ResCalculator(610, 10, 12),
     color: SabaColors.sabaWhite,
   },
 });

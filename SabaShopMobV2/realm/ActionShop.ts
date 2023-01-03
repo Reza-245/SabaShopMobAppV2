@@ -1,5 +1,5 @@
 import Realm from 'realm';
-import {FPListSchema, ProductCoverSchema} from './Models';
+import {ProductCoverSchema} from './Models';
 import {TProductCover} from '../utils/types';
 export function ActionShop(
   type: string,
@@ -13,7 +13,7 @@ export function ActionShop(
   try {
     const realm = new Realm({
       path: 'SabaShopV2DB',
-      schema: [ProductCoverSchema, FPListSchema],
+      schema: [ProductCoverSchema],
     });
     switch (type) {
       case 'sync':
@@ -49,7 +49,5 @@ export function ActionShop(
         break;
     }
     // realm.close();
-  } catch (error) {
-    console.log('Error From Shop ', error);
-  }
+  } catch (error) {}
 }

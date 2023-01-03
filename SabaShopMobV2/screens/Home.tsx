@@ -17,55 +17,52 @@ import {BarIndicator, MaterialIndicator} from 'react-native-indicators';
 const axios = require('axios').default;
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import _ErrorLayout from '../layouts/ErrorLayout';
-import {ActionFPList} from '../realm/ActionFPList';
-import {favoriteChacker} from '../utils/favoriteChecker';
-import {favDeleter} from '../utils/favoriteDeleter';
 import {MConverter} from '../utils/moneyConverter';
 import {substringMaker} from '../utils/substringMaker';
-import _productCard from '../components/_productCard';
+import _productCard from '../components/_productCardView';
 import {isEmpty} from 'lodash';
+import {TProductServer} from '../utils/types';
+import ResCalculator from '../utils/responsiv/Responsiv';
+import mainHeight from '../utils/responsiv/MainScreen';
 const Home = () => {
   try {
     const [loading, setLoading] = useState<boolean>(true);
-    const navigate = useNavigation();
+    const navigate = useNavigation<any>();
     const [imageSliders, setImageSliders] = useState<any[]>([]);
-    const [lastProducts, setLastProducts] = useState();
+    const [lastProducts, setLastProducts] = useState<TProductServer[]>([]);
     const [categories, setCategories] = useState<any>();
-    const [favorites, setFavorites] = useState<number[]>();
 
     useFocusEffect(
       useCallback(() => {
         let source = axios.CancelToken.source();
         let AxiosConfigCancel = {cancelToken: source.token};
-        ActionFPList('sync', 0, setFavorites);
-        (async () => {
-          await axios
-            .get(endpoints.getNewestProducts, AxiosConfigCancel)
-            .then(async ({data}: any) => {
-              setLastProducts(data);
-              await axios
-                .get(endpoints.getCategory1, AxiosConfigCancel)
-                .then(async ({data}: any) => {
-                  setCategories(data);
-                  await axios
-                    .get(endpoints.getImageSlider, AxiosConfigCancel)
-                    .then(({data}: any) => {
-                      let images: any[] = [];
-                      data.map(img =>
-                        images.push({img: endpoints.URL + img.sliderImage}),
-                      );
-                      console.log(images);
-                      setImageSliders(images);
-                    })
-                    .catch(() => {});
-                })
-                .catch(() => {});
-            })
-            .catch(() => {})
-            .finally(() => {
-              setLoading(false);
-            });
-        })();
+
+        axios
+          .get(endpoints.getNewestProducts, AxiosConfigCancel)
+          .then(({data}: any) => {
+            setLastProducts(data);
+            axios
+              .get(endpoints.getCategory1, AxiosConfigCancel)
+              .then(({data}: any) => {
+                setCategories(data);
+                axios
+                  .get(endpoints.getImageSlider, AxiosConfigCancel)
+                  .then(({data}: any) => {
+                    let images: any[] = [];
+                    data.map(img =>
+                      images.push({img: endpoints.URL + img.sliderImage}),
+                    );
+
+                    setImageSliders(images);
+                  })
+                  .catch(() => {});
+              })
+              .catch(() => {});
+          })
+          .catch(() => {})
+          .finally(() => {
+            setLoading(false);
+          });
 
         return () => source.cancel();
       }, []),
@@ -86,12 +83,12 @@ const Home = () => {
                 data={imageSliders}
                 autoPlay={true}
                 timer={2000}
-                closeIconColor={SabaColors.sabaDarkGary}
+                closeIconColor={SabaColors.sabaGold2}
                 activeIndicatorStyle={{
-                  backgroundColor: SabaColors.sabaGreen,
+                  backgroundColor: SabaColors.sabaGold2,
                 }}
                 inActiveIndicatorStyle={{
-                  backgroundColor: SabaColors.sabaGray,
+                  backgroundColor: SabaColors.sabaGold2,
                 }}
                 indicatorContainerStyle={{
                   bottom: 0,
@@ -111,6 +108,7 @@ const Home = () => {
               loading={loading}
               products={lastProducts}
               title={'جدیدترین ها'}
+              productsType="newest"
             />
           </View>
           <View style={styles.HomeMenuView}>
@@ -153,22 +151,21 @@ const Home = () => {
     return <_ErrorLayout pageError="Home" errorDes={err.message} />;
   }
 };
-const MainScreen = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   HomeView: {
-    backgroundColor: SabaColors.sabaWhite,
+    backgroundColor: SabaColors.sabaSlate2,
     height: '100%',
   },
   HomeSliderView: {
-    height: 180,
-    width: '100%',
+    height: mainHeight - 420,
+    maxHeight: 200,
   },
   HomeMenuView: {
-    height: 144,
+    height: 124,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    backgroundColor: '#fff',
     width: '100%',
   },
   HomeMenuScrollView: {},
@@ -180,7 +177,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   HomeMenuItemImageView: {
-    backgroundColor: SabaColors.sabaLightGreen,
     height: '100%',
     width: '100%',
     justifyContent: 'center',
@@ -206,9 +202,7 @@ const styles = StyleSheet.create({
   HomeMenuItemImageTitle: {
     fontFamily: 'shabnamMed',
     color: '#fff',
-    textShadowRadius: 6,
-    textShadowColor: SabaColors.sabaGray,
-    fontSize: 12,
+    fontSize: ResCalculator(610, 10, 14),
     textAlign: 'center',
   },
   // --------------------------- Products --------------------------------
