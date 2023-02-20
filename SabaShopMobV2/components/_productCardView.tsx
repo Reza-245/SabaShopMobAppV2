@@ -27,18 +27,18 @@ import ResCalculator from '../utils/responsiv/Responsiv';
 interface IProductCard {
   loading: boolean;
   title: string;
-  productsType?: 'all' | 'newest' | 'similar';
   similarData?: string;
   products: TProductServer[];
   stackType?: string;
+  screenName?: string;
 }
 function _productCardView({
   products,
   loading,
   title,
-  productsType,
   similarData,
   stackType = 'navigate',
+  screenName = 'PRODUCTS',
 }: IProductCard) {
   const navigate = useNavigation<any>();
 
@@ -52,9 +52,7 @@ function _productCardView({
         </View>
         <TouchableOpacity
           activeOpacity={0.5}
-          onPress={() =>
-            navigate.navigate('PRODUCTS', {type: productsType, similarData})
-          }
+          onPress={() => navigate.push(screenName, {similarData})}
           style={styles.HomeContentNewTitleLeftView}>
           <Text style={styles.HomeContentNewTitleLeftText}>مشاهده همه</Text>
           <MaterialIcons
@@ -70,18 +68,20 @@ function _productCardView({
             <BarIndicator
               animationDuration={700}
               size={40}
-              color={SabaColors.sabaGreen}
+              color={SabaColors.sabaGold2}
               count={5}
             />
           </View>
         ) : (
           <View style={styles.HomeContentNewItemsView}>
             <ScrollView horizontal={true}>
-              {products?.map(item => (
+              {products?.map((item, index) => (
                 <_productCard
                   stackType={stackType}
                   product={item}
                   key={item.id}
+                  index={index}
+                  length={products.length}
                 />
               ))}
             </ScrollView>

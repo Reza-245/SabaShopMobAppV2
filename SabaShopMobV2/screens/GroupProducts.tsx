@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import SabaColors from '../utils/SabaColors.json';
 import {
   StyleSheet,
@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   VirtualizedList,
+  FlatList,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -25,70 +26,53 @@ import _ErrorLayout from '../layouts/ErrorLayout';
 import _productCard2 from '../components/_productCard2';
 import {TProductServer} from '../utils/types';
 import ResCalculator from '../utils/responsiv/Responsiv';
-const Products = ({route}: any) => {
+const GroupProducts = ({route}: any) => {
   try {
     const [supportModal, setSupportModal] = React.useState<boolean>(false);
-    const [loading, setLoading] = React.useState<boolean>(true);
-    const [searching, setSearching] = React.useState<boolean>(false);
-    const [products, setProducts] = React.useState<TProductServer[]>();
+    const [loading, setLoading] = React.useState<boolean>(false);
+    const [products, setProducts] = React.useState<TProductServer[]>([]);
     const [search, setSearch] = React.useState<string>();
+
+    useEffect(() => {
+      setLoading(true);
+      let source = axios.CancelToken.source();
+      let AxiosConfigCancel = {cancelToken: source.token};
+      axios
+        .get(
+          `${endpoints.getProducts}/${route?.params?.cat1}/0`,
+          AxiosConfigCancel,
+        )
+        .then(({data}) => {
+          setProducts(data);
+          setLoading(false);
+        })
+        .catch(() => {})
+        .finally(() => {});
+
+      return () => source.cancel();
+    }, []);
     const navigate = useNavigation<any>();
-    useFocusEffect(
-      useCallback(() => {
-        let source = axios.CancelToken.source();
-        let AxiosConfigCancel = {cancelToken: source.token};
-
-        if (route?.params?.type == 'newest') {
-          axios
-            .get(endpoints.getAllNewestProducts, AxiosConfigCancel)
-            .then(({data}) => {
-              setProducts(data);
-              setLoading(false);
-            })
-            .catch(() => {})
-            .finally(() => {});
-        } else if (route?.params?.type == 'similar') {
-          axios
-            .get(
-              `${endpoints.getAllSimilarProducts}/${route?.params?.similarData}`,
-              AxiosConfigCancel,
-            )
-            .then(({data}) => {
-              setProducts(data);
-              setLoading(false);
-            })
-            .catch(() => {})
-            .finally(() => {});
-        } else {
-          axios
-            .get(
-              `${endpoints.getProducts}/${
-                route?.params?.cat1 ? route?.params?.cat1 : 0
-              }/0`,
-              AxiosConfigCancel,
-            )
-            .then(({data}) => {
-              setProducts(data);
-              setLoading(false);
-            })
-            .catch(() => {})
-            .finally(() => {});
-        }
-
-        return () => source.cancel();
-      }, []),
-    );
 
     const handleSearch = useCallback(
       debounce((searchData: string) => {
-        setSearching(true);
+        let source = axios.CancelToken.source();
+        let AxiosConfigCancel = {cancelToken: source.token};
+        if (loading) source.cancel();
+        setLoading(true);
         axios
-          .get(`${endpoints.getProducts}?q=${searchData?.replace(' ', '')}`)
+          .get(
+            `${endpoints.getProducts}/${
+              route?.params?.cat1
+            }/0?qG=${searchData?.replace(' ', '')}`,
+            AxiosConfigCancel,
+          )
           .then(({data}) => {
             setProducts(data);
-            setSearching(false);
+            setLoading(false);
           })
-          .catch(() => {});
+          .catch(err => {
+            console.log(err);
+          });
       }, 300),
       [],
     );
@@ -150,8 +134,12 @@ const Products = ({route}: any) => {
             />
           </TouchableOpacity>
         </View>
-
-        {loading || searching ? (
+        <View style={styles.categoryContainer}>
+          <Text style={styles.categoryTextContainer}>
+            {route?.params?.catName1}
+          </Text>
+        </View>
+        {loading ? (
           <View style={styles.indicatorView}>
             <SkypeIndicator
               animationDuration={1200}
@@ -168,34 +156,16 @@ const Products = ({route}: any) => {
             </Text>
           </View>
         ) : (
-          <VirtualizedList
-            style={styles.productsContentView}
-            data={products}
-            getItemCount={(data: any) => data.length}
-            getItem={(listArr, index) => {
-              let items = [];
-              for (let i = 0; i < 2; i++) {
-                const item = listArr[index * 2 + i];
-                item && items.push(item);
-              }
-              return items;
-            }}
-            keyExtractor={(item: any) => item.id}
-            renderItem={({item}: any) => (
-              <View
-                key={item.id}
-                style={{
-                  marginVertical: 6,
-                  justifyContent: 'space-evenly',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                }}>
-                {item.map((pro: TProductServer) => (
-                  <_productCard2 key={pro.id} {...pro} />
-                ))}
-              </View>
-            )}
-          />
+          <View style={styles.productsContentView}>
+            <FlatList
+              data={products}
+              renderItem={({item, index}: any) => (
+                <_productCard2 key={item.id} index={index} product={item} />
+              )}
+              keyExtractor={(item: any) => item.id}
+              numColumns={2}
+            />
+          </View>
         )}
       </View>
     );
@@ -209,6 +179,17 @@ const styles = StyleSheet.create({
     height: MainScreen.height,
     width: MainScreen.width,
     backgroundColor: SabaColors.sabaSlate2,
+  },
+  categoryContainer: {
+    backgroundColor: SabaColors.sabaSlate,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  categoryTextContainer: {
+    fontFamily: 'shabnamMed',
+    color: SabaColors.sabaGold2,
+    paddingVertical: 2,
   },
   productsSearchContainer: {
     backgroundColor: SabaColors.sabaSlate,
@@ -237,7 +218,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     fontSize: ResCalculator(610, 11, 13),
     fontFamily: 'shabnam',
-    color: 'rgba(35,35,35,0.6)',
+    color: '#fff',
     height: '100%',
   },
   indicatorView: {
@@ -260,9 +241,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   productsContentView: {
-    paddingHorizontal: 6,
-    paddingVertical: 12,
-    height: MainScreen.height - 130,
+    height: MainScreen.height - 77,
+    justifyContent: 'center',
+    width: '100%',
   },
 
   productsContentNoResultView: {
@@ -278,4 +259,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Products;
+export default GroupProducts;

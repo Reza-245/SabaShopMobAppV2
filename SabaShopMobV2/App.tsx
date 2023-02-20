@@ -9,7 +9,7 @@ import ProductSelf from './screens/ProductSelf';
 import endpoints from './utils/endpoints.json';
 import _MainLayout from './layouts/MainLayout';
 import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, DarkTheme} from '@react-navigation/native';
 import Products from './screens/Products';
 import {ToastProvider} from 'react-native-toast-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,9 +18,27 @@ import ErrorConnectionLayout from './layouts/ErrorConnectionLayout';
 import ErrorLayout from './layouts/ErrorLayout';
 import Shop from './screens/Shop';
 import Profile from './screens/Profile';
+import najva from 'react-native-najva';
 import Factor from './screens/Factor';
+import NewProducts from './screens/NewProducts';
+import SimilarProducts from './screens/SimilarProducts';
+import FreshProducts from './screens/FreshProducts';
+import GroupProducts from './screens/GroupProducts';
 const App = () => {
-  useLayoutEffect(() => StatusBar.setHidden(true), []);
+  useEffect(() => {
+    initializePush();
+  }, []);
+  // * --------------------  Najva Initializer -----------------------
+  const initializePush = async () => {
+    const appId = '795348cb-1784-4710-b566-5014da7f35b3'; // get app id from najva panel
+    const websiteId = 44322; // get website id from najva panel
+
+    await najva.initialize(appId, websiteId, false /* location */, false);
+
+    const najvaToken = await najva.getSubscribedToken();
+  };
+
+  // * --------------------  ------------------ -----------------------
 
   try {
     I18nManager.allowRTL(false);
@@ -29,6 +47,8 @@ const App = () => {
     const [ordersNumber, setOrdersNumber] = useState<number>();
     const Stack = createStackNavigator();
     useEffect(() => {
+      StatusBar.setHidden(true);
+
       (async () => {
         const sabaShopV2Token = await AsyncStorage.getItem('saba2token');
         if (sabaShopV2Token) setInitRouteName('MAIN');
@@ -43,7 +63,7 @@ const App = () => {
           height: Dimensions.get('window').height,
           backgroundColor: 'red',
         }}>
-        <NavigationContainer>
+        <NavigationContainer theme={DarkTheme}>
           <ToastProvider offsetTop={50}>
             <Stack.Navigator
               initialRouteName={initRouteName}
@@ -58,6 +78,13 @@ const App = () => {
               </Stack.Screen>
               <Stack.Screen name="PRODUCT_SELF" component={ProductSelf} />
               <Stack.Screen name="PRODUCTS" component={Products} />
+              <Stack.Screen name="GROUP_PRODUCTS" component={GroupProducts} />
+              <Stack.Screen name="NEW_PRODUCTS" component={NewProducts} />
+              <Stack.Screen name="FRESH_PRODUCTS" component={FreshProducts} />
+              <Stack.Screen
+                name="SIMILAR_PRODUCTS"
+                component={SimilarProducts}
+              />
               <Stack.Screen name="LOGIN" component={Login} />
               <Stack.Screen name="FACTOR" component={Factor} />
               <Stack.Screen name="SHOP">

@@ -25,6 +25,7 @@ import {MaterialIndicator} from 'react-native-indicators';
 import _ErrorLayout from '../layouts/ErrorLayout';
 import ResCalculator from '../utils/responsiv/Responsiv';
 import mainHeight from '../utils/responsiv/MainScreen';
+import PushNotification from 'react-native-push-notification';
 const App = () => {
   try {
     const toast = useToast();

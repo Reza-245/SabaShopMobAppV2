@@ -26,45 +26,29 @@ import _ErrorLayout from '../layouts/ErrorLayout';
 import _productCard2 from '../components/_productCard2';
 import {TProductServer} from '../utils/types';
 import ResCalculator from '../utils/responsiv/Responsiv';
-const Products = ({route}: any) => {
+const FreshProducts = () => {
   try {
     const [supportModal, setSupportModal] = React.useState<boolean>(false);
-    const [loading, setLoading] = React.useState<boolean>(false);
+    const [loading, setLoading] = React.useState<boolean>(true);
     const [products, setProducts] = React.useState<TProductServer[]>([]);
-    const [search, setSearch] = React.useState<string>();
-    const [blankDataTitle, setBlankDataTitle] = React.useState<string>(
-      'کلمه مورد نظر را وارد کنید',
-    );
     const navigate = useNavigation<any>();
 
-    const handleSearch = useCallback(
-      debounce((searchData: string) => {
-        let source = axios.CancelToken.source();
-        let AxiosConfigCancel = {cancelToken: source.token};
+    useEffect(() => {
+      let source = axios.CancelToken.source();
+      let AxiosConfigCancel = {cancelToken: source.token};
 
-        if (isEmpty(searchData)) {
-          source.cancel();
-          setBlankDataTitle('کلمه مورد نظر را وارد کنید');
-          setProducts([]);
+      axios
+        .get(endpoints.getAllFreshProducts, AxiosConfigCancel)
+        .then(({data}) => {
+          setProducts(data);
+        })
+        .catch(() => {})
+        .finally(() => {
           setLoading(false);
-        } else {
-          if (loading) source.cancel();
-          setLoading(true);
-          axios
-            .get(
-              `${endpoints.getProducts}?q=${searchData?.replace(' ', '')}`,
-              AxiosConfigCancel,
-            )
-            .then(({data}) => {
-              setProducts(data);
-              if (isEmpty(data)) setBlankDataTitle('محصولی یافت نشد');
-              setLoading(false);
-            })
-            .catch(() => {});
-        }
-      }, 300),
-      [],
-    );
+        });
+
+      return () => source.cancel();
+    }, []);
 
     return (
       <View style={styles.productsView}>
@@ -80,37 +64,7 @@ const Products = ({route}: any) => {
             <Ionicons size={32} name="ios-menu" color={SabaColors.sabaWhite} />
           </TouchableOpacity>
           <View style={styles.productsSearchView}>
-            <View style={styles.productsSearchInView}>
-              <TextInput
-                placeholder="جسـتجو کنید ..."
-                placeholderTextColor="rgba(135,135,135,0.7)"
-                style={styles.productsInputSearchView}
-                onChangeText={value => {
-                  setSearch(value);
-                  handleSearch(value);
-                }}
-                value={search}
-              />
-            </View>
-            {isEmpty(search) ? (
-              <View style={styles.productsSearchIconView}>
-                <Feather size={22} name="search" color={SabaColors.sabaWhite} />
-              </View>
-            ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  setSearch('');
-                  handleSearch('');
-                }}
-                activeOpacity={0.5}
-                style={styles.productsSearchIconView}>
-                <AntDesign
-                  size={27}
-                  name="close"
-                  color={SabaColors.sabaWhite}
-                />
-              </TouchableOpacity>
-            )}
+            <Text style={styles.productsSearchText}>تازه ترین محصولات</Text>
           </View>
           <TouchableOpacity
             onPress={() => navigate.goBack()}
@@ -137,7 +91,7 @@ const Products = ({route}: any) => {
         ) : isEmpty(products) ? (
           <View style={styles.productsContentNoResultView}>
             <Text style={styles.productsContentNoResultText}>
-              {blankDataTitle}
+              محصولی یافت نشد
             </Text>
           </View>
         ) : (
@@ -179,11 +133,13 @@ const styles = StyleSheet.create({
     flex: 7,
   },
   productsSearchView: {
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     flex: 8,
-    paddingVertical: 7,
-    flexDirection: 'row-reverse',
+  },
+  productsSearchText: {
+    color: SabaColors.sabaGold2,
+    fontFamily: 'shabnamMed',
   },
   productsInputSearchView: {
     backgroundColor: SabaColors.sabaSlate2,
@@ -233,4 +189,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Products;
+export default FreshProducts;

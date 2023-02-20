@@ -11,6 +11,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import _ErrorLayout from '../layouts/ErrorLayout';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -27,11 +30,13 @@ import {ActionShop} from '../realm/ActionShop';
 import {TProductCover, TProductServer} from '../utils/types';
 import ResCalculator from '../utils/responsiv/Responsiv';
 import mainHeight from '../utils/responsiv/MainScreen';
+import {substringMaker} from '../utils/substringMaker';
 const Shop = ({ordersNumber, setOrdersNumber}: any) => {
   try {
     const navigate = useNavigation<any>();
     const [products, setProducts] = useState<TProductServerMixed[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [orderModal, setOrderModal] = useState<boolean>(false);
     const [ordering, setOrdering] = useState<boolean>(false);
     const toast = useToast();
     type TProductServerMixed = TProductServer & {
@@ -62,7 +67,6 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                 productCover.orderCounts--;
                 product.proNumbers = productCover.orderCounts;
               }
-
               break;
             case 'plus':
               if (productCover.orderCounts < product.numb) {
@@ -70,8 +74,8 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                 product.proNumbers = productCover.orderCounts;
               } else
                 toast.show(
-                  'نمیتوان بیشتر از موجودی سفارش داد',
-                  ToastCustom.info,
+                  'نمیتوان خارج از موجودی سفارش داد',
+                  ToastCustom.danger,
                 );
 
               break;
@@ -106,7 +110,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
           axios
             .post(
               endpoints.getShopProducts,
-              JSON.stringify({favs: ProsMobile_ConvertedNumberList}),
+              JSON.stringify({pros: ProsMobile_ConvertedNumberList}),
               AxiosConfigCancel,
             )
             .then(({data, status}) => {
@@ -149,6 +153,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
       const updated_products = old_products.filter(pro => pro.id != id);
       setProducts(updated_products);
       setOrdersNumber(updated_products.length);
+      toast.show('کالا حذف شد', ToastCustom.info);
     }
 
     function handleDeleteBasket() {
@@ -178,7 +183,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
           setOrdersNumber(0);
           setOrdering(false);
           setProducts([]);
-          toast.show('سبد با موفقیت ثبت شد', ToastCustom.success);
+          setOrderModal(true);
         })
         .catch()
         .finally(() => setOrdering(false));
@@ -197,7 +202,42 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
             />
           </TouchableOpacity>
         </View>
-
+        <Modal
+          animationIn="fadeInUp"
+          animationOut="fadeOutDown"
+          animationInTiming={350}
+          animationOutTiming={350}
+          hideModalContentWhileAnimating={true}
+          isVisible={orderModal}
+          backdropOpacity={0}
+          style={{
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            margin: 0,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+          }}>
+          <View style={styles.shopBasketOrderModalContainer}>
+            <MaterialCommunityIcons
+              name="check-decagram"
+              size={60}
+              color={SabaColors.sabaGreen}
+            />
+            <Text style={styles.shopBasketOrderModalTextView}>
+              سفارش شما ارسال شد، لطفا منتظر تماس مسؤل فروش بمانید
+            </Text>
+          </View>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.shopBasketOrderModalButtonView}
+            onPress={() => {
+              setOrderModal(false);
+              setTimeout(() => {
+                navigate.navigate('MAIN');
+              }, 500);
+            }}>
+            <Text style={styles.shopBasketButtonText}>بستن</Text>
+          </TouchableOpacity>
+        </Modal>
         {loading ? (
           <SkypeIndicator size={60} color={SabaColors.sabaWhite} />
         ) : (
@@ -246,7 +286,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                           قیمت کل اجناس
                         </Text>
                         <Text style={styles.shopBasketInfoDetailTextLeft}>
-                          {MConverter(wholePriceChecker())} تومان
+                          {MConverter(wholePriceChecker())} ریال
                         </Text>
                       </View>
                     </View>
@@ -278,7 +318,12 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                   <ScrollView>
                     {products &&
                       products.map((pro, index) => (
-                        <View key={pro.id} style={styles.shopBasketItemView}>
+                        <View
+                          key={pro.id}
+                          style={{
+                            ...styles.shopBasketItemView,
+                            marginTop: index === 0 ? 10 : 0,
+                          }}>
                           <View style={styles.shopBasketContentView}>
                             <View style={styles.shopBasketContentDetailsView}>
                               <View style={styles.shopBasketTopButtonView}>
@@ -297,15 +342,15 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                                 style={styles.shopBasketContentDetailsTopView}>
                                 <Text
                                   style={styles.shopBasketContentDetailsTitle}>
-                                  {pro.nam}
+                                  {substringMaker(pro.nam, 52)}
                                 </Text>
                                 <Text
                                   style={styles.shopBasketContentDetailsPrice}>
-                                  قیمت نقدی {MConverter(pro.price)} تومان
+                                  قیمت نقدی {MConverter(pro.price)} ریال
                                 </Text>
                                 <Text
                                   style={styles.shopBasketContentDetailsPrice}>
-                                  قیمت چکی {MConverter(pro.price1)} تومان
+                                  قیمت چکی {MConverter(pro.price1)} ریال
                                 </Text>
                               </View>
                               <View
@@ -327,7 +372,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                                     <FontAwesome5
                                       name="plus"
                                       color={SabaColors.sabaWhite}
-                                      size={ResCalculator(610, 14, 15.5)}
+                                      size={ResCalculator(610, 12.5, 14)}
                                     />
                                   </TouchableOpacity>
                                   <View
@@ -352,7 +397,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                                     <FontAwesome5
                                       color={SabaColors.sabaWhite}
                                       name="minus"
-                                      size={ResCalculator(610, 14, 15.5)}
+                                      size={ResCalculator(610, 12.5, 14)}
                                     />
                                   </TouchableOpacity>
                                 </View>
@@ -417,6 +462,35 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     backgroundColor: SabaColors.sabaSlate,
   },
+  shopBasketOrderModalContainer: {
+    backgroundColor: SabaColors.sabaSlate,
+    elevation: 3,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  shopBasketOrderModalTextView: {
+    fontFamily: 'shabnamMed',
+    color: '#fff',
+    marginTop: 18,
+    paddingHorizontal: 6,
+    height: 40,
+    width: '100%',
+    textAlign: 'center',
+  },
+  shopBasketOrderModalButtonView: {
+    backgroundColor: SabaColors.sabaIndigo,
+    width: '100%',
+    height: 46,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shopBasketOrderModalButtonText: {
+    fontFamily: 'shabnamMed',
+    color: '#fff',
+  },
+
   shopNavbackSelf: {},
   shopView: {
     height: '100%',
@@ -542,7 +616,7 @@ const styles = StyleSheet.create({
     backgroundColor: SabaColors.sabaSlate,
     height: 150,
     borderRadius: 10,
-    marginVertical: 8,
+    marginBottom: 10,
     elevation: 3,
     overflow: 'hidden',
   },
@@ -557,11 +631,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   shopBasketContentDetailsView: {
-    flex: 2,
+    flex: 1,
     padding: 10,
   },
   shopBasketContentImageView: {
-    flex: 1,
+    width: 150,
     height: '100%',
     position: 'relative',
   },

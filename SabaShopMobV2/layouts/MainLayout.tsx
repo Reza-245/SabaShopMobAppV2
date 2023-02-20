@@ -69,7 +69,7 @@ const _MainLayout = ({ordersNumber, setOrdersNumber}: any) => {
             </TouchableOpacity>
             <View style={styles.MenuNavigatorRightTitleView}>
               <Text style={styles.MenuNavigatorRightTitleText}>
-                فروشگاه صبا
+                بازرگانی آریــانــا
               </Text>
               <Text style={styles.MenuNavigatorRightTitleCustomerText}>
                 {customerName?.split('|')[0]}

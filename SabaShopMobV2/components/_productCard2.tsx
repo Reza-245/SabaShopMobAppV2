@@ -22,56 +22,82 @@ import {substringMaker} from '../utils/substringMaker';
 import {isEmpty} from 'lodash';
 import {TProductServer} from '../utils/types';
 import ResCalculator from '../utils/responsiv/Responsiv';
-
-function _productCard2(product: TProductServer) {
+const widthScreen = Dimensions.get('window').width;
+interface IProduct {
+  product: TProductServer;
+  index: number;
+}
+function _productCard2({product, index}: IProduct) {
   const navigate = useNavigation<any>();
   const [categories, setCategories] = useState<any>();
   return (
-    <TouchableOpacity
-      key={product.id}
-      activeOpacity={0.9}
-      onPress={() => navigate.navigate('PRODUCT_SELF', {product: product})}
-      style={styles.HomeContentNewItemView}>
-      <View style={styles.HomeContentNewItemImageContainerView}>
-        {!isEmpty(product.pic_path) ? (
-          <Image
-            style={styles.HomeContentNewItemImage}
-            source={{uri: endpoints.URL + product.pic_path}}
-          />
-        ) : (
-          <Image
-            style={{
-              ...styles.HomeContentNewItemImage,
-              opacity: 0.6,
-            }}
-            source={require('../assets/img/noneimage.png')}
-          />
-        )}
-      </View>
-      <View style={styles.HomeContentNewItemInfoView}>
-        <Text style={styles.HomeContentNewItemInfoTitle}>
-          {substringMaker(product.nam, 46)}
-        </Text>
-        <Text style={styles.HomeContentNewItemInfoPrice}>
-          {MConverter(product.price)} تومان
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <View
+      style={{
+        ...styles.HomeContentView,
+        paddingRight: index % 2 === 1 ? 6 : 0,
+      }}>
+      <TouchableOpacity
+        key={product.id}
+        activeOpacity={0.9}
+        onPress={() => navigate.push('PRODUCT_SELF', {product: product})}
+        style={styles.HomeContentNewItemView}>
+        <View style={styles.HomeContentNewItemImageContainerView}>
+          {!isEmpty(product.pic_path) ? (
+            <Image
+              style={styles.HomeContentNewItemImage}
+              source={{uri: endpoints.URL + product.pic_path}}
+            />
+          ) : (
+            <Image
+              style={{
+                ...styles.HomeContentNewItemImage,
+                opacity: 0.6,
+              }}
+              source={require('../assets/img/noneimage.png')}
+            />
+          )}
+          {product.numb <= 0 && (
+            <View style={styles.HomeContentItemExistView}>
+              <Text style={styles.HomeContentItemExistText}>اتمام موجودی</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.HomeContentNewItemInfoView}>
+          <Text style={styles.HomeContentNewItemInfoTitle}>
+            {substringMaker(product.nam, 46)}
+          </Text>
+          <Text style={styles.HomeContentNewItemInfoPrice}>
+            نقدی {MConverter(product.price)} ریال
+          </Text>
+          <Text style={styles.HomeContentNewItemInfoPrice}>
+            چکی {MConverter(product.price1)} ریال
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 }
 const styles = StyleSheet.create({
-  HomeContentNewItemView: {
+  HomeContentView: {
+    width: '50%',
     height: 280,
-    width: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 6,
+    paddingLeft: 6,
+  },
+  HomeContentNewItemView: {
+    height: '100%',
+    width: '100%',
     backgroundColor: SabaColors.sabaSlate,
     borderRadius: 12,
     elevation: 4,
-    marginHorizontal: 8,
+    // marginHorizontal: 8,
     overflow: 'hidden',
-    marginVertical: 12,
+    // marginTop: 18,
   },
   HomeContentNewItemImageContainerView: {
-    height: 160,
+    height: '65%',
     width: '100%',
     borderRadius: 20,
     justifyContent: 'center',
@@ -84,23 +110,37 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   HomeContentNewItemInfoView: {
-    height: '100%',
+    height: '35%',
+    paddingHorizontal: 3,
+    paddingTop: 3,
+  },
+  HomeContentItemExistView: {
+    position: 'absolute',
     paddingHorizontal: 4,
-    paddingVertical: 3,
+    paddingVertical: 2,
+    backgroundColor: SabaColors.sabaRed,
+    borderRadius: 2,
+    top: 8,
+    left: 6,
+  },
+  HomeContentItemExistText: {
+    fontFamily: 'shabnamMed',
+    fontSize: ResCalculator(610, 10.6, 12),
+    color: '#fff',
   },
   HomeContentNewItemInfoTitle: {
     fontFamily: 'shabnamMed',
-    fontSize: ResCalculator(610, 11, 14),
+    fontSize: ResCalculator(610, 10.5, 13.5),
     color: SabaColors.sabaWhite,
     textAlign: 'center',
-    height: 80,
+    height: 44,
   },
   HomeContentNewItemInfoPrice: {
     fontFamily: 'shabnamMed',
-    fontSize: ResCalculator(610, 13, 16),
+    fontSize: ResCalculator(610, 10, 13),
     color: SabaColors.sabaGold2,
     textAlign: 'center',
-    height: 28,
+    height: 21.5,
   },
 });
 export default _productCard2;

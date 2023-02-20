@@ -26,8 +26,10 @@ import ResCalculator from '../utils/responsiv/Responsiv';
 interface productCard {
   product: TProductServer;
   stackType: string;
+  index: number;
+  length: number;
 }
-function _productCard({product, stackType}: productCard) {
+function _productCard({product, stackType, index, length}: productCard) {
   const navigate = useNavigation<any>();
   const [categories, setCategories] = useState<any>();
   return (
@@ -36,10 +38,13 @@ function _productCard({product, stackType}: productCard) {
       activeOpacity={0.9}
       onPress={() =>
         stackType === 'navigate'
-          ? navigate.navigate('PRODUCT_SELF', {product: product})
-          : navigate.replace('PRODUCT_SELF', {product: product})
+          ? navigate.push('PRODUCT_SELF', {product: product})
+          : navigate.push('PRODUCT_SELF', {product: product})
       }
-      style={styles.HomeContentNewItemView}>
+      style={{
+        ...styles.HomeContentNewItemView,
+        marginLeft: index === 0 ? 8 : 0,
+      }}>
       <View style={styles.HomeContentNewItemImageContainerView}>
         {!isEmpty(product.pic_path) ? (
           <Image
@@ -55,13 +60,21 @@ function _productCard({product, stackType}: productCard) {
             source={require('../assets/img/noneimage.png')}
           />
         )}
+        {product.numb <= 0 && (
+          <View style={styles.HomeContentItemExistView}>
+            <Text style={styles.HomeContentItemExistText}>اتمام موجودی</Text>
+          </View>
+        )}
       </View>
       <View style={styles.HomeContentNewItemInfoView}>
         <Text style={styles.HomeContentNewItemInfoTitle}>
-          {substringMaker(product.nam, 40)}
+          {substringMaker(product.nam, 36)}
         </Text>
         <Text style={styles.HomeContentNewItemInfoPrice}>
-          {MConverter(product.price)} تومان
+          نقدی {MConverter(product.price)} ریال
+        </Text>
+        <Text style={styles.HomeContentNewItemInfoPrice}>
+          چکی {MConverter(product.price1)} ریال
         </Text>
       </View>
     </TouchableOpacity>
@@ -74,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: SabaColors.sabaSlate,
     borderRadius: 12,
     elevation: 4,
-    marginHorizontal: 8,
+    marginRight: 8,
     overflow: 'hidden',
   },
   HomeContentNewItemImageContainerView: {
@@ -95,19 +108,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
     paddingVertical: 2,
   },
+  HomeContentItemExistView: {
+    position: 'absolute',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    backgroundColor: SabaColors.sabaRed,
+    borderRadius: 2,
+    top: 8,
+    left: 6,
+  },
+  HomeContentItemExistText: {
+    fontFamily: 'shabnamMed',
+    fontSize: ResCalculator(610, 8.6, 10),
+    color: '#fff',
+  },
   HomeContentNewItemInfoTitle: {
     fontFamily: 'shabnamMed',
-    fontSize: ResCalculator(610, 9.5, 12.2),
+    fontSize: ResCalculator(610, 9.4, 12.1),
     color: SabaColors.sabaWhite,
     textAlign: 'center',
-    height: 52,
+    height: 36,
   },
   HomeContentNewItemInfoPrice: {
     fontFamily: 'shabnamMed',
-    fontSize: ResCalculator(610, 11, 14),
+    fontSize: ResCalculator(610, 9.5, 12.5),
     color: SabaColors.sabaGold2,
     textAlign: 'center',
-    height: 20,
+    height: 19,
   },
 });
 export default _productCard;

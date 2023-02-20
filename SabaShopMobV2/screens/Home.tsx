@@ -19,7 +19,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import _ErrorLayout from '../layouts/ErrorLayout';
 import {MConverter} from '../utils/moneyConverter';
 import {substringMaker} from '../utils/substringMaker';
-import _productCard from '../components/_productCardView';
+import _productCardView from '../components/_productCardView';
 import {isEmpty} from 'lodash';
 import {TProductServer} from '../utils/types';
 import ResCalculator from '../utils/responsiv/Responsiv';
@@ -30,6 +30,7 @@ const Home = () => {
     const navigate = useNavigation<any>();
     const [imageSliders, setImageSliders] = useState<any[]>([]);
     const [lastProducts, setLastProducts] = useState<TProductServer[]>([]);
+    const [freshProducts, setFreshProducts] = useState<TProductServer[]>([]);
     const [categories, setCategories] = useState<any>();
 
     useFocusEffect(
@@ -52,8 +53,13 @@ const Home = () => {
                     data.map(img =>
                       images.push({img: endpoints.URL + img.sliderImage}),
                     );
-
                     setImageSliders(images);
+                    axios
+                      .get(endpoints.getFreshProducts, AxiosConfigCancel)
+                      .then(({data}: any) => {
+                        setFreshProducts(data);
+                      })
+                      .catch(() => {});
                   })
                   .catch(() => {});
               })
@@ -70,11 +76,11 @@ const Home = () => {
 
     return (
       <View style={styles.HomeView}>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator>
           <View style={styles.HomeSliderView}>
             {loading ? (
               <MaterialIndicator
-                color={SabaColors.sabaGreen}
+                color={SabaColors.sabaGold2}
                 animationDuration={2900}
                 size={28}
               />
@@ -104,30 +110,44 @@ const Home = () => {
             )}
           </View>
           <View style={styles.HomeContentConatiner}>
-            <_productCard
+            <_productCardView
               loading={loading}
               products={lastProducts}
               title={'جدیدترین ها'}
-              productsType="newest"
+              screenName="NEW_PRODUCTS"
+            />
+          </View>
+          <View style={styles.HomeContentConatiner}>
+            <_productCardView
+              loading={loading}
+              products={freshProducts}
+              title={'تازه ترین ها'}
+              screenName="FRESH_PRODUCTS"
             />
           </View>
           <View style={styles.HomeMenuView}>
             {loading ? (
               <MaterialIndicator
-                color={SabaColors.sabaGreen}
+                color={SabaColors.sabaGold2}
                 animationDuration={2900}
                 size={28}
               />
             ) : (
               <ScrollView style={styles.HomeMenuScrollView} horizontal={true}>
-                {categories?.map(cat => (
+                {categories?.map((cat, index) => (
                   <TouchableOpacity
                     key={cat.id}
                     onPress={() =>
-                      navigate.navigate('PRODUCTS', {cat1: cat.id})
+                      navigate.navigate('GROUP_PRODUCTS', {
+                        cat1: cat.id,
+                        catName1: cat.nam,
+                      })
                     }
                     activeOpacity={0.5}
-                    style={styles.HomeMenuItemView}>
+                    style={{
+                      ...styles.HomeMenuItemView,
+                      marginLeft: index === 0 ? 8 : 0,
+                    }}>
                     <View style={styles.HomeMenuItemImageView}>
                       <Image
                         style={styles.HomeMenuItemImage}
@@ -136,7 +156,7 @@ const Home = () => {
                     </View>
                     <View style={styles.HomeMenuItemImageTitleView}>
                       <Text style={styles.HomeMenuItemImageTitle}>
-                        {substringMaker(cat.nam, 20)}
+                        {substringMaker(cat.nam, 44)}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -172,9 +192,10 @@ const styles = StyleSheet.create({
   HomeMenuItemView: {
     height: 120,
     width: 120,
-    marginHorizontal: 4,
+    marginRight: 8,
     borderRadius: 8,
     position: 'relative',
+    backgroundColor: SabaColors.sabaSlate,
   },
   HomeMenuItemImageView: {
     height: '100%',

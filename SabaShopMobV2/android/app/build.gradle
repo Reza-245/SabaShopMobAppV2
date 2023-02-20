@@ -102,7 +102,8 @@ def enableProguardInReleaseBuilds = false
 /**
  * The preferred build flavor of JavaScriptCore.
  *
- * For example, to use the international variant, you can use:
+ * For example, to use the international variant, you can use:+
+ 
  * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
  *
  * The international variant includes ICU i18n library and necessary data
@@ -138,8 +139,8 @@ android {
         applicationId "com.sabashopmobv2"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 12
+        versionName "1.2"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
@@ -265,7 +266,7 @@ dependencies {
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-    implementation "androidx.work:work-runtime-ktx:2.7.0"
+    implementation "androidx.work:work-runtime:2.7.1"
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'
     }

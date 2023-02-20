@@ -6,12 +6,14 @@
   "getAllNewestProducts": "api/getallnewestproducts",
   "getSimilarProducts": "api/getsimilarproducts/",
   "getAllSimilarProducts": "api/getallsimilarproducts/",
-  "getShopProducts": "api/getshopproducts",
+  "getShopProducts": "api/getShopProducts",
   "sendSms": "api/sendsabasms",
   "login": "api/loginshop",
   "finalSubmit": "api/createorder",
   "getCategory1": "api/getcategory1",
   "checkConnection": "api/checkconnection",
   "getImageSlider": "api/getSliderImage",
+  "getFreshProducts": "api/getFreshProducts",
+  "getAllFreshProducts": "api/getAllFreshProducts",
   "getFactor": "api/getFactor/"
 }

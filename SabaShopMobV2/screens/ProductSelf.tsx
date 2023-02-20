@@ -39,22 +39,23 @@ const ProductSelf = ({route}: any) => {
       [],
     );
     const [order, setOrder] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [ordered, setOrdered] = useState<boolean>(false);
     const [orderCount, setOrderCount] = useState<string>('0');
     const navigate = useNavigation<any>();
     function handleOrderCount() {
-      if (isEmpty(orderCount) || orderCount === '0') handleDiscardOrder();
+      if (isEmpty(orderCount) || orderCount === '0')
+        toast.show('مقدار صفر پذیرفته نیست', ToastCustom.danger);
       else {
+        // * notAllowMoreThanExist
         if (orderCount > product.numb) {
-          ActionShop('create_update', product.id, parseInt(product.numb));
-          toast.show('کالا به اندازه موجودی ثبت شد', ToastCustom.success);
-          setOrderCount(String(product.numb));
+          toast.show('خارج از موجودی', ToastCustom.danger);
         } else {
           toast.show('کالا ثبت شد', ToastCustom.success);
           ActionShop('create_update', product.id, parseInt(orderCount));
+          setOrdered(true);
+          setOrder(true);
         }
-        setOrdered(true);
-        setOrder(true);
       }
     }
     function hasOrdered(ordereds: TProductCover[] | undefined) {
@@ -84,15 +85,16 @@ const ProductSelf = ({route}: any) => {
     }
     useFocusEffect(
       useCallback(() => {
+        setLoading(true);
         ActionShop('sync', 0, 0, null, hasOrdered);
-
         axios
           .get(
-            `${endpoints.getSimilarProducts}${product.id}?similar=${
-              product.nam.split(' ')[0]
-            }`,
+            `${endpoints.getSimilarProducts}${product.id}/${
+              product.groupid
+            }?similar=${product.nam.split(' ')[0]}`,
           )
           .then(({data}) => {
+            setLoading(false);
             setSimilarProducts(data);
           });
       }, []),
@@ -150,86 +152,105 @@ const ProductSelf = ({route}: any) => {
           <View style={styles.productInfoView}>
             <View style={styles.productInfoContentView}>
               <Text style={styles.productInfoContentTitle}>{product.nam}</Text>
-              <Text style={styles.productInfoContentPrice}>
-                قیمت نقدی {MConverter(product.price)} تومان
+              <Text style={styles.productInfoContentBox}>
+                {`هر ${product.unit} شامل ${product.box} ${product.unit2} است`}
               </Text>
               <Text style={styles.productInfoContentPrice}>
-                قیمت چکی {MConverter(product.price1)} تومان
+                قیمت نقدی {MConverter(product.price)} ریال
               </Text>
-              {/* <Text style={styles.productInfoContentExist}>
-                موجودی:{product.numb} عدد
-              </Text> */}
-              {order ? (
-                <View style={styles.productInfoContentCounterView}>
-                  <TouchableOpacity
-                    onPress={
-                      ordered ? () => setOrdered(false) : handleOrderCount
-                    }
-                    activeOpacity={0.5}
-                    style={{
-                      ...styles.productInfoContentCounterRightView,
-                      backgroundColor: ordered
-                        ? SabaColors.sabaOrange
-                        : SabaColors.sabaGreen,
-                    }}>
-                    <FontAwesome5
-                      name={ordered ? 'pen' : 'check'}
-                      color="#fff"
-                      size={16}
-                    />
-                  </TouchableOpacity>
-                  <View
-                    style={{
-                      ...styles.productInfoContentCounterMiddleView,
-                      backgroundColor: ordered
-                        ? SabaColors.sabaGreen
-                        : SabaColors.sabaWhite,
-                    }}>
-                    <TextInput
-                      value={orderCount}
-                      editable={!ordered}
-                      keyboardType={'number-pad'}
-                      style={{
-                        ...styles.productInfoContentCounterMiddleInput,
-                        color: ordered ? '#fff' : SabaColors.sabaSlate,
-                      }}
-                      onChangeText={value => setOrderCount(value)}
-                    />
-                  </View>
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    onPress={handleDiscardOrder}
-                    style={styles.productInfoContentCounterLeftView}>
-                    <FontAwesome5 name="trash" color="#fff" size={16} />
-                  </TouchableOpacity>
+              <Text style={styles.productInfoContentPrice}>
+                قیمت چکی {MConverter(product.price1)} ریال
+              </Text>
+
+              {product.numb <= 0 ? (
+                <View style={styles.productInfoContentExistView}>
+                  <Text style={styles.productInfoContentExist}>
+                    اتمام موجودی
+                  </Text>
                 </View>
               ) : (
-                <View style={styles.productInfoContentCounterOrderButtonView}>
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    onPress={handleOrder}
-                    style={styles.productInfoContentCounterOrderButton}>
-                    <FontAwesome
-                      name="shopping-basket"
-                      color="#fff"
-                      size={16}
-                    />
-                    <Text
-                      style={styles.productInfoContentCounterOrderButtonText}>
-                      سفارش
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                <>
+                  {order ? (
+                    <View style={styles.productInfoContentCounterView}>
+                      <TouchableOpacity
+                        onPress={
+                          ordered ? () => setOrdered(false) : handleOrderCount
+                        }
+                        activeOpacity={0.5}
+                        style={{
+                          ...styles.productInfoContentCounterRightView,
+                          backgroundColor: ordered
+                            ? SabaColors.sabaOrange
+                            : SabaColors.sabaGreen,
+                        }}>
+                        <FontAwesome5
+                          name={ordered ? 'pen' : 'check'}
+                          color="#fff"
+                          size={16}
+                        />
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          ...styles.productInfoContentCounterMiddleView,
+                          backgroundColor: ordered
+                            ? SabaColors.sabaGreen
+                            : SabaColors.sabaWhite,
+                        }}>
+                        <TextInput
+                          value={orderCount}
+                          editable={!ordered}
+                          keyboardType={'number-pad'}
+                          style={{
+                            ...styles.productInfoContentCounterMiddleInput,
+                            color: ordered ? '#fff' : SabaColors.sabaSlate,
+                          }}
+                          onChangeText={value => setOrderCount(value)}
+                        />
+                      </View>
+                      <TouchableOpacity
+                        activeOpacity={0.5}
+                        onPress={handleDiscardOrder}
+                        style={styles.productInfoContentCounterLeftView}>
+                        <FontAwesome5 name="trash" color="#fff" size={16} />
+                      </TouchableOpacity>
+                      <Text style={styles.productInfoContentCounterCaution}>
+                        ( لطفا تعداد را به جزء وارد کنید )
+                      </Text>
+                    </View>
+                  ) : (
+                    <View
+                      style={styles.productInfoContentCounterOrderButtonView}>
+                      <TouchableOpacity
+                        activeOpacity={0.5}
+                        onPress={handleOrder}
+                        style={styles.productInfoContentCounterOrderButton}>
+                        <FontAwesome
+                          name="shopping-basket"
+                          color="#fff"
+                          size={16}
+                        />
+                        <Text
+                          style={
+                            styles.productInfoContentCounterOrderButtonText
+                          }>
+                          سفارش
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </>
               )}
             </View>
           </View>
           <_productCardView
-            loading={false}
+            loading={loading}
             products={similarProducts}
             title={'محصولات مشابه'}
-            stackType="replace"
-            productsType="similar"
-            similarData={`${product.id}?similar=${product.nam.split(' ')[0]}`}
+            stackType="navigate"
+            screenName="SIMILAR_PRODUCTS"
+            similarData={`${product.id}/${product.groupid}?similar=${
+              product.nam.split(' ')[0]
+            }`}
           />
         </View>
       </SafeAreaView>
@@ -241,7 +262,7 @@ const ProductSelf = ({route}: any) => {
 const styles = StyleSheet.create({
   productSelfView: {},
   productInfImageView: {
-    height: mainHeight - 410,
+    height: mainHeight - 430,
     maxHeight: 300,
   },
   productInfoView: {
@@ -268,17 +289,30 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     height: 40,
   },
+  productInfoContentBox: {
+    marginTop: 4,
+    fontFamily: 'shabnam',
+    fontSize: ResCalculator(610, 11, 14),
+    color: SabaColors.sabaGold2,
+  },
   productInfoContentPrice: {
     marginTop: 4,
     fontFamily: 'shabnam',
     fontSize: ResCalculator(610, 11, 14),
     color: SabaColors.sabaWhite,
   },
+  productInfoContentExistView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: SabaColors.sabaRed,
+    height: 38,
+    marginTop: 16,
+    marginBottom: 6,
+  },
   productInfoContentExist: {
-    marginTop: 4,
     fontFamily: 'shabnam',
-    fontSize: 14,
-    color: SabaColors.sabaGreen,
+    fontSize: ResCalculator(610, 12, 14),
+    color: SabaColors.sabaWhite,
   },
   productInfoContentCounterView: {
     width: '100%',
@@ -310,7 +344,7 @@ const styles = StyleSheet.create({
   },
   productInfoContentCounterOrderButtonText: {
     fontFamily: 'shabnamMed',
-    fontSize: 12,
+    fontSize: ResCalculator(610, 10, 12),
     color: '#fff',
     marginRight: 6,
   },
@@ -331,6 +365,12 @@ const styles = StyleSheet.create({
     elevation: 2,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  productInfoContentCounterCaution: {
+    fontFamily: 'shabnam',
+    color: SabaColors.sabaGold2,
+    marginRight: 12,
+    fontSize: ResCalculator(610, 10, 12),
   },
   productInfoContentCounterMiddleView: {
     backgroundColor: SabaColors.sabaWhite,
