@@ -25,7 +25,6 @@ import {MaterialIndicator} from 'react-native-indicators';
 import _ErrorLayout from '../layouts/ErrorLayout';
 import ResCalculator from '../utils/responsiv/Responsiv';
 import mainHeight from '../utils/responsiv/MainScreen';
-import PushNotification from 'react-native-push-notification';
 const App = () => {
   try {
     const toast = useToast();
@@ -87,8 +86,7 @@ const App = () => {
             'کد تاییدیه با موفقیت به شماره همراه شما ارسال شد',
             ToastCustom.success,
           );
-        })
-        .catch(() => {});
+        });
     }
     function handleExitCount() {
       asyncStorage.removeItem('profileData');
@@ -163,7 +161,7 @@ const App = () => {
                 </TouchableOpacity>
 
                 <Text style={styles.loginNavigationInfoName}>
-                  بازرگانی آریــانــا
+                  بازرگانی شـاهسونی
                 </Text>
               </View>
             </View>
@@ -175,7 +173,7 @@ const App = () => {
               <View style={styles.loginIconView}>
                 <Image
                   style={styles.loginIcon}
-                  source={require('../assets/img/AryanaLogo512.png')}
+                  source={require('../assets/img/ShahLogo.png')}
                 />
               </View>
               <View style={styles.loginFieldsView}>

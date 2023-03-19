@@ -1,5 +1,6 @@
 {
-  "URL": "http://5.202.251.165:4545/",
+  "URL": "https://sabaol.ir/",
+  "ucid": "shahsavani",
   "getProducts": "api/getproduct",
   "getFirstProducts": "api/getfirstproducts",
   "getNewestProducts": "api/getnewestproducts",

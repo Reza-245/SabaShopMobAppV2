@@ -40,32 +40,28 @@ const Home = () => {
 
         axios
           .get(endpoints.getNewestProducts, AxiosConfigCancel)
-          .then(({data}: any) => {
-            setLastProducts(data);
+          .then((data1: any) => {
+            setLastProducts(data1.data);
             axios
               .get(endpoints.getCategory1, AxiosConfigCancel)
-              .then(({data}: any) => {
-                setCategories(data);
+              .then((data2: any) => {
+                setCategories(data2.data);
                 axios
                   .get(endpoints.getImageSlider, AxiosConfigCancel)
-                  .then(({data}: any) => {
+                  .then((data3: any) => {
                     let images: any[] = [];
-                    data.map(img =>
+                    data3.data.map(img =>
                       images.push({img: endpoints.URL + img.sliderImage}),
                     );
                     setImageSliders(images);
                     axios
                       .get(endpoints.getFreshProducts, AxiosConfigCancel)
-                      .then(({data}: any) => {
-                        setFreshProducts(data);
-                      })
-                      .catch(() => {});
-                  })
-                  .catch(() => {});
-              })
-              .catch(() => {});
+                      .then((data4: any) => {
+                        setFreshProducts(data4.data);
+                      });
+                  });
+              });
           })
-          .catch(() => {})
           .finally(() => {
             setLoading(false);
           });
@@ -86,9 +82,14 @@ const Home = () => {
               />
             ) : (
               <ImageSlider
-                data={imageSliders}
+                data={
+                  imageSliders.length != 0
+                    ? imageSliders
+                    : [{img: require('../assets/img/defaultSlider.jpg')}]
+                }
                 autoPlay={true}
                 timer={2000}
+                localImg={imageSliders.length == 0}
                 closeIconColor={SabaColors.sabaGold2}
                 activeIndicatorStyle={{
                   backgroundColor: SabaColors.sabaGold2,

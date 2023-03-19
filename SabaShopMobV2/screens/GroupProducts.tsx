@@ -160,7 +160,12 @@ const GroupProducts = ({route}: any) => {
             <FlatList
               data={products}
               renderItem={({item, index}: any) => (
-                <_productCard2 key={item.id} index={index} product={item} />
+                <_productCard2
+                  key={item.id}
+                  index={index}
+                  product={item}
+                  length={products.length}
+                />
               )}
               keyExtractor={(item: any) => item.id}
               numColumns={2}

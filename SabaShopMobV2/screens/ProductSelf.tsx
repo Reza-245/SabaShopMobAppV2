@@ -242,6 +242,7 @@ const ProductSelf = ({route}: any) => {
               )}
             </View>
           </View>
+          {console.log(22222222222222222, product)}
           <_productCardView
             loading={loading}
             products={similarProducts}

@@ -26,8 +26,9 @@ const widthScreen = Dimensions.get('window').width;
 interface IProduct {
   product: TProductServer;
   index: number;
+  length: number;
 }
-function _productCard2({product, index}: IProduct) {
+function _productCard2({product, index, length}: IProduct) {
   const navigate = useNavigation<any>();
   const [categories, setCategories] = useState<any>();
   return (
@@ -35,6 +36,7 @@ function _productCard2({product, index}: IProduct) {
       style={{
         ...styles.HomeContentView,
         paddingRight: index % 2 === 1 ? 6 : 0,
+        paddingBottom: length - 1 <= index + 1 ? 6 : 0,
       }}>
       <TouchableOpacity
         key={product.id}

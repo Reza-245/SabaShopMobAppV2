@@ -55,9 +55,9 @@ const _menuModal = ({supportModal, setSupportModal, showMenu = true}: any) => {
             <View style={styles.modalImageView}>
               <Image
                 style={styles.modalImageLogo}
-                source={require('../assets/img/AryanaLogo512.png')}
+                source={require('../assets/img/ShahLogo.png')}
               />
-              <Text style={styles.modalImageText}>بازرگانی آریانا</Text>
+              <Text style={styles.modalImageText}>بازرگانی شاهسونی</Text>
             </View>
             <View style={styles.modalMenuNavbar}>
               <TouchableOpacity
