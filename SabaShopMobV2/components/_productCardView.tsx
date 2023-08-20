@@ -41,9 +41,6 @@ function _productCardView({
   screenName = 'PRODUCTS',
 }: IProductCard) {
   const navigate = useNavigation<any>();
-
-  const [categories, setCategories] = useState<any>();
-
   return (
     <View style={styles.HomeContentNewView}>
       <View style={styles.HomeContentNewTitleView}>

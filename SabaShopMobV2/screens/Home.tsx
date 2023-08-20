@@ -37,7 +37,6 @@ const Home = () => {
       useCallback(() => {
         let source = axios.CancelToken.source();
         let AxiosConfigCancel = {cancelToken: source.token};
-
         axios
           .get(endpoints.getNewestProducts, AxiosConfigCancel)
           .then((data1: any) => {
@@ -46,13 +45,15 @@ const Home = () => {
               .get(endpoints.getCategory1, AxiosConfigCancel)
               .then((data2: any) => {
                 setCategories(data2.data);
+                console.log('ttttttttttttttttttttttt', data2);
                 axios
                   .get(endpoints.getImageSlider, AxiosConfigCancel)
                   .then((data3: any) => {
                     let images: any[] = [];
                     data3.data.map(img =>
-                      images.push({img: endpoints.URL + img.sliderImage}),
+                      images.push({img: endpoints.ImageURL + img.sliderImage}),
                     );
+
                     setImageSliders(images);
                     axios
                       .get(endpoints.getFreshProducts, AxiosConfigCancel)
@@ -134,35 +135,43 @@ const Home = () => {
                 size={28}
               />
             ) : (
-              <ScrollView style={styles.HomeMenuScrollView} horizontal={true}>
-                {categories?.map((cat, index) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    onPress={() =>
-                      navigate.navigate('GROUP_PRODUCTS', {
-                        cat1: cat.id,
-                        catName1: cat.nam,
-                      })
-                    }
-                    activeOpacity={0.5}
-                    style={{
-                      ...styles.HomeMenuItemView,
-                      marginLeft: index === 0 ? 8 : 0,
-                    }}>
-                    <View style={styles.HomeMenuItemImageView}>
-                      <Image
-                        style={styles.HomeMenuItemImage}
-                        source={{uri: endpoints.URL + cat.pic_path}}
-                      />
-                    </View>
-                    <View style={styles.HomeMenuItemImageTitleView}>
-                      <Text style={styles.HomeMenuItemImageTitle}>
-                        {substringMaker(cat.nam, 44)}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <View>
+                <Text style={styles.HomeMenuScrollTitleCat}>دسته بندی ها</Text>
+                <ScrollView style={styles.HomeMenuScrollView} horizontal={true}>
+                  {categories?.map((cat: any, index: any) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      onPress={() =>
+                        navigate.navigate('GROUP_PRODUCTS', {
+                          cat1: cat.id,
+                          catName1: cat.nam,
+                        })
+                      }
+                      activeOpacity={0.5}
+                      style={{
+                        ...styles.HomeMenuItemView,
+                        marginLeft: index === 0 ? 8 : 0,
+                      }}>
+                      <View style={styles.HomeMenuItemImageView}>
+                        <Image
+                          style={styles.HomeMenuItemImage}
+                          source={{uri: endpoints.ImageURL + cat.pic_path}}
+                        />
+
+                        {console.log(
+                          '---------------',
+                          endpoints.ImageURL + cat.pic_path,
+                        )}
+                      </View>
+                      <View style={styles.HomeMenuItemImageTitleView}>
+                        <Text style={styles.HomeMenuItemImageTitle}>
+                          {substringMaker(cat.nam, 44)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
             )}
           </View>
         </ScrollView>
@@ -183,7 +192,7 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   HomeMenuView: {
-    height: 124,
+    height: 156,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -197,6 +206,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     position: 'relative',
     backgroundColor: SabaColors.sabaSlate,
+  },
+  HomeMenuScrollTitleCat: {
+    fontFamily: 'shabnamMed',
+    color: SabaColors.sabaWhite,
+    fontSize: ResCalculator(610, 11, 13),
+    marginBottom: 6,
+    marginTop: 5,
+    marginRight: 6,
   },
   HomeMenuItemImageView: {
     height: '100%',

@@ -44,9 +44,47 @@ const Factor = () => {
           const factorData = await asyncStorage.getItem('saba2token');
           axios
             .get(endpoints.getFactor + factorData?.split('|')[1])
-            .then(({data}) => setFactors(data))
-            .finally(() => setLoading(false));
+            .then(({data: dataList}) => {
+              let allFactorsSorted = [];
+              let factorListedObject = {
+                customerName: '',
+                customerCode: '',
+                factorNumber: '',
+                date: '',
+                time: '',
+                factors: [],
+              };
+              let allFactorNumbers = [];
+              for (const data of dataList)
+                allFactorNumbers.push(data.factorNumber);
+
+              let uniqueFactorNumbers = [...new Set(allFactorNumbers)];
+              for (let unique of uniqueFactorNumbers) {
+                let alluniqueFactors = dataList.filter(
+                  d => d.factorNumber === unique,
+                );
+
+                factorListedObject.customerName = alluniqueFactors[0].nam;
+                factorListedObject.customerCode = alluniqueFactors[0].idcast;
+                factorListedObject.factorNumber =
+                  alluniqueFactors[0].factorNumber;
+                factorListedObject.date = alluniqueFactors[0].dat;
+                factorListedObject.time = alluniqueFactors[0].tim;
+                factorListedObject.factors = [...alluniqueFactors];
+
+                allFactorsSorted.push({...factorListedObject});
+              }
+              setFactors(
+                allFactorsSorted.sort(
+                  (a: any, b: any) => b.factorNumber - a.factorNumber,
+                ),
+              );
+            })
+            .finally(() => {
+              setLoading(false);
+            });
         }
+
         getfactor();
       }, []),
     );
@@ -65,7 +103,6 @@ const Factor = () => {
           </TouchableOpacity>
         </View>
 
-        {/* <FlatList renderItem={}  /> */}
         <View style={styles.factorSelfView}>
           {loading ? (
             <SkypeIndicator size={60} color="#fff" />
@@ -79,26 +116,30 @@ const Factor = () => {
                 </View>
               ) : (
                 <ScrollView>
-                  {factors?.map(fac => (
-                    <View key={fac.id}>
+                  {factors?.map((fac, index) => (
+                    <View key={index}>
+                      {/* <View
+                        style={{
+                          ...styles.factorItemView,
+                          backgroundColor: 'indigo',
+                        }}>
+                        <Text style={styles.factorItemRightTextView}>
+                          نام مشتری
+                        </Text>
+                        <Text style={styles.factorItemLeftTextView}>
+                          {fac.customerName}
+                        </Text>
+                      </View> */}
                       <View
                         style={{
                           ...styles.factorItemView,
                           backgroundColor: 'indigo',
                         }}>
                         <Text style={styles.factorItemRightTextView}>
-                          نام کالا
+                          شماره فاکتور
                         </Text>
                         <Text style={styles.factorItemLeftTextView}>
-                          {fac.kalanam}
-                        </Text>
-                      </View>
-                      <View style={styles.factorItemView}>
-                        <Text style={styles.factorItemRightTextView}>
-                          نام مشتری
-                        </Text>
-                        <Text style={styles.factorItemLeftTextView}>
-                          {fac.nam}
+                          {fac.factorNumber}
                         </Text>
                       </View>
                       <View style={styles.factorItemView}>
@@ -106,53 +147,76 @@ const Factor = () => {
                           کدمشتری
                         </Text>
                         <Text style={styles.factorItemLeftTextView}>
-                          {fac.idcast}
+                          {fac.customerCode}
                         </Text>
                       </View>
-                      <View style={styles.factorItemView}>
-                        <Text style={styles.factorItemRightTextView}>
-                          کد کالا
-                        </Text>
-                        <Text style={styles.factorItemLeftTextView}>
-                          {fac.codekala}
-                        </Text>
-                      </View>
+
                       <View style={styles.factorItemView}>
                         <Text style={styles.factorItemRightTextView}>
                           تاریخ
                         </Text>
                         <Text style={styles.factorItemLeftTextView}>
-                          {fac.dat}
+                          {fac.date}
                         </Text>
                       </View>
                       <View style={styles.factorItemView}>
                         <Text style={styles.factorItemRightTextView}>زمان</Text>
                         <Text style={styles.factorItemLeftTextView}>
-                          {fac.tim}
+                          {fac.time}
                         </Text>
                       </View>
-                      <View style={styles.factorItemView}>
-                        <Text style={styles.factorItemRightTextView}>
-                          تعداد
-                        </Text>
-                        <Text style={styles.factorItemLeftTextView}>
-                          {fac.numb} عدد
-                        </Text>
-                      </View>
-                      <View style={styles.factorItemView}>
-                        <Text style={styles.factorItemRightTextView}>قیمت</Text>
-                        <Text style={styles.factorItemLeftTextView}>
-                          {fac.price}
-                        </Text>
-                      </View>
-                      <View style={styles.factorItemView}>
-                        <Text style={styles.factorItemRightTextView}>
-                          تخفیف
-                        </Text>
-                        <Text style={styles.factorItemLeftTextView}>
-                          {fac.ptk}
-                        </Text>
-                      </View>
+                      {fac.factors.map(factorObj => (
+                        <>
+                          <View
+                            style={{
+                              ...styles.factorItemView,
+                              backgroundColor: 'green',
+                            }}>
+                            <Text style={styles.factorItemRightTextView}>
+                              نام کالا
+                            </Text>
+                            <Text style={styles.factorItemLeftTextView}>
+                              {factorObj.kalanam.length > 30
+                                ? factorObj.kalanam.substring(0, 32) + '...'
+                                : factorObj.kalanam}
+                            </Text>
+                          </View>
+
+                          <View style={styles.factorItemView}>
+                            <Text style={styles.factorItemRightTextView}>
+                              کد کالا
+                            </Text>
+                            <Text style={styles.factorItemLeftTextView}>
+                              {factorObj.codekala}
+                            </Text>
+                          </View>
+
+                          <View style={styles.factorItemView}>
+                            <Text style={styles.factorItemRightTextView}>
+                              تعداد
+                            </Text>
+                            <Text style={styles.factorItemLeftTextView}>
+                              {factorObj.numb} عدد
+                            </Text>
+                          </View>
+                          <View style={styles.factorItemView}>
+                            <Text style={styles.factorItemRightTextView}>
+                              قیمت
+                            </Text>
+                            <Text style={styles.factorItemLeftTextView}>
+                              {factorObj.price}
+                            </Text>
+                          </View>
+                          <View style={styles.factorItemView}>
+                            <Text style={styles.factorItemRightTextView}>
+                              تخفیف
+                            </Text>
+                            <Text style={styles.factorItemLeftTextView}>
+                              {factorObj.ptk}
+                            </Text>
+                          </View>
+                        </>
+                      ))}
                     </View>
                   ))}
                 </ScrollView>

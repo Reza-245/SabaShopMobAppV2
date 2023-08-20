@@ -111,12 +111,15 @@ def getSimilarProducts(request,distinctId):
     products = Product.objects.raw(f"exec store @st=13, @unam={similarData}")
     return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
 
+
+
 @api_view(["GET"])
 def getAllSimilarProducts(request,distinctId): 
     similarData = request.GET.get("similar")
     # products = Product.objects.filter(nam__contains=request.GET.get("similar")).exclude(id=distinctId).all()
     products = Product.objects.raw(f"exec store @st=14, @unam={similarData}")
     return Response(ProductSerializer(products,many=True).data,status=status.HTTP_200_OK)
+
 
 
 @api_view(["GET"])
@@ -138,14 +141,10 @@ def getFirstProducts(request):
 
 
 
-
 @api_view(["GET"])
 def getSliderImage(request): 
     sliderImages = sliderImage.objects.all()
     return Response(SliderImageSerializer(sliderImages,many=True).data,status=status.HTTP_200_OK)
-
-
-
 
 
 

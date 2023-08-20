@@ -3,6 +3,8 @@ import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import ToastCustom from '../utils/toastCustom';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -17,9 +19,11 @@ const _menuModal = ({supportModal, setSupportModal, showMenu = true}: any) => {
   try {
     const navigate = useNavigation<any>();
     const toast = useToast();
-    const supportNumber = '09059147588';
-    const ManagerNumber = '09171081139';
-    const whatsAppNumber = '09059147588';
+    const supportNumber = '07137425782';
+    const ManagerNumber = '07137425782';
+    const whatsAppNumber = '+989059147588';
+    const rubikaId = 'arianaamirii';
+    const location = 'https://goo.gl/maps/iAfM6t2dbM15HmnU9';
     async function logout() {
       await AsyncStorage.removeItem('saba2token');
       navigate.replace('LOGIN');
@@ -55,19 +59,19 @@ const _menuModal = ({supportModal, setSupportModal, showMenu = true}: any) => {
             <View style={styles.modalImageView}>
               <Image
                 style={styles.modalImageLogo}
-                source={require('../assets/img/ShahLogo.png')}
+                source={require('../assets/img/AryanaLogo512.png')}
               />
-              <Text style={styles.modalImageText}>بازرگانی شاهسونی</Text>
+              <Text style={styles.modalImageText}>بازرگانی امیری (آریانا)</Text>
             </View>
             <View style={styles.modalMenuNavbar}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => Linking.openURL(`tel:${supportNumber}`)}
                 style={{
                   ...styles.modalMenuNavbarItem,
                   backgroundColor: SabaColors.sabaIndigo,
                 }}>
                 <FontAwesome5 color="#fff" name="question" size={24} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity
                 onPress={() =>
                   Linking.openURL(`whatsapp://send?phone=${whatsAppNumber}`)
@@ -87,10 +91,26 @@ const _menuModal = ({supportModal, setSupportModal, showMenu = true}: any) => {
                 }}>
                 <FontAwesome5 color="#fff" name="phone" size={23} />
               </TouchableOpacity>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={logout}
                 style={styles.modalMenuNavbarItem}>
                 <AntDesign color="#fff" name="instagram" size={30} />
+              </TouchableOpacity> */}
+              <TouchableOpacity
+                onPress={() => Linking.openURL(location)}
+                style={{
+                  ...styles.modalMenuNavbarItem,
+                  backgroundColor: SabaColors.sabaRed,
+                }}>
+                <Ionicons color="#fff" name="ios-location-sharp" size={30} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`https://rubika.ir/${rubikaId}`)}
+                style={styles.modalMenuNavbarItem}>
+                <Image
+                  style={{width: 32, height: 32}}
+                  source={require('../assets/img/rubika.png')}
+                />
               </TouchableOpacity>
             </View>
             <View
@@ -237,7 +257,7 @@ const styles = StyleSheet.create({
   modalMenuNavbarItem: {
     height: 46,
     width: 46,
-    backgroundColor: SabaColors.sabaRed,
+    backgroundColor: SabaColors.sabaWhite,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',

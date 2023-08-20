@@ -49,7 +49,7 @@ function _productCard({product, stackType, index, length}: productCard) {
         {!isEmpty(product.pic_path) ? (
           <Image
             style={styles.HomeContentNewItemImage}
-            source={{uri: endpoints.URL + product.pic_path}}
+            source={{uri: endpoints.ImageURL + product.pic_path}}
           />
         ) : (
           <Image

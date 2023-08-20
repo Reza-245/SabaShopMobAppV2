@@ -18,42 +18,29 @@ import ErrorConnectionLayout from './layouts/ErrorConnectionLayout';
 import ErrorLayout from './layouts/ErrorLayout';
 import Shop from './screens/Shop';
 import Profile from './screens/Profile';
-import najva from 'react-native-najva';
 import Factor from './screens/Factor';
 import NewProducts from './screens/NewProducts';
 import SimilarProducts from './screens/SimilarProducts';
 import FreshProducts from './screens/FreshProducts';
 import GroupProducts from './screens/GroupProducts';
+import Splash from './screens/Splash';
 const App = () => {
-  useEffect(() => {
-    initializePush();
-  }, []);
-  // * --------------------  Najva Initializer -----------------------
-  const initializePush = async () => {
-    const appId = '795348cb-1784-4710-b566-5014da7f35b3'; // get app id from najva panel
-    const websiteId = 44322; // get website id from najva panel
-
-    await najva.initialize(appId, websiteId, false /* location */, false);
-
-    const najvaToken = await najva.getSubscribedToken();
-  };
-
-  // * --------------------  ------------------ -----------------------
-
   try {
     I18nManager.allowRTL(false);
+    I18nManager.forceRTL(false);
     const [initRouteName, setInitRouteName] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(true);
     const [ordersNumber, setOrdersNumber] = useState<number>();
     const Stack = createStackNavigator();
     useEffect(() => {
       StatusBar.setHidden(true);
+      setInitRouteName('SPLASH');
 
-      (async () => {
-        const sabaShopV2Token = await AsyncStorage.getItem('saba2token');
-        if (sabaShopV2Token) setInitRouteName('MAIN');
-        else setInitRouteName('LOGIN');
-      })();
+      // (async () => {
+      //   const sabaShopV2Token = await AsyncStorage.getItem('saba2token');
+      //   if (sabaShopV2Token) setInitRouteName('MAIN');
+      //   else setInitRouteName('LOGIN');
+      // })();
     }, []);
     if (initRouteName === null) return null;
 
@@ -81,6 +68,7 @@ const App = () => {
               <Stack.Screen name="GROUP_PRODUCTS" component={GroupProducts} />
               <Stack.Screen name="NEW_PRODUCTS" component={NewProducts} />
               <Stack.Screen name="FRESH_PRODUCTS" component={FreshProducts} />
+              <Stack.Screen name="SPLASH" component={Splash} />
               <Stack.Screen
                 name="SIMILAR_PRODUCTS"
                 component={SimilarProducts}

@@ -161,7 +161,7 @@ const App = () => {
                 </TouchableOpacity>
 
                 <Text style={styles.loginNavigationInfoName}>
-                  بازرگانی شـاهسونی
+                  بازرگانی امیری (آریانا)
                 </Text>
               </View>
             </View>
@@ -173,7 +173,7 @@ const App = () => {
               <View style={styles.loginIconView}>
                 <Image
                   style={styles.loginIcon}
-                  source={require('../assets/img/ShahLogo.png')}
+                  source={require('../assets/img/AryanaLogo512.png')}
                 />
               </View>
               <View style={styles.loginFieldsView}>

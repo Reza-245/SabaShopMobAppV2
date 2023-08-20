@@ -47,7 +47,7 @@ function _productCard2({product, index, length}: IProduct) {
           {!isEmpty(product.pic_path) ? (
             <Image
               style={styles.HomeContentNewItemImage}
-              source={{uri: endpoints.URL + product.pic_path}}
+              source={{uri: endpoints.ImageURL + product.pic_path}}
             />
           ) : (
             <Image
@@ -58,6 +58,7 @@ function _productCard2({product, index, length}: IProduct) {
               source={require('../assets/img/noneimage.png')}
             />
           )}
+
           {product.numb <= 0 && (
             <View style={styles.HomeContentItemExistView}>
               <Text style={styles.HomeContentItemExistText}>اتمام موجودی</Text>

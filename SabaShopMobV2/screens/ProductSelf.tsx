@@ -108,7 +108,7 @@ const ProductSelf = ({route}: any) => {
               {
                 img: isEmpty(product.pic_path)
                   ? require('../assets/img/noneimage.png')
-                  : `${endpoints.URL + product.pic_path}`,
+                  : `${endpoints.ImageURL + product.pic_path}`,
               },
             ]}
             localImg={isEmpty(product.pic_path)}
@@ -160,6 +160,9 @@ const ProductSelf = ({route}: any) => {
               </Text>
               <Text style={styles.productInfoContentPrice}>
                 قیمت چکی {MConverter(product.price1)} ریال
+              </Text>
+              <Text style={styles.productInfoContentExstField}>
+                موجودی {product.numb} عدد
               </Text>
 
               {product.numb <= 0 ? (
@@ -242,7 +245,6 @@ const ProductSelf = ({route}: any) => {
               )}
             </View>
           </View>
-          {console.log(22222222222222222, product)}
           <_productCardView
             loading={loading}
             products={similarProducts}
@@ -288,7 +290,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     color: SabaColors.sabaWhite,
     textAlign: 'right',
-    height: 40,
+    height: 30,
   },
   productInfoContentBox: {
     marginTop: 4,
@@ -301,6 +303,12 @@ const styles = StyleSheet.create({
     fontFamily: 'shabnam',
     fontSize: ResCalculator(610, 11, 14),
     color: SabaColors.sabaWhite,
+  },
+  productInfoContentExstField: {
+    marginTop: 4,
+    fontFamily: 'shabnam',
+    fontSize: ResCalculator(610, 11, 14),
+    color: SabaColors.sabaGreen,
   },
   productInfoContentExistView: {
     justifyContent: 'center',
@@ -322,10 +330,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     flexDirection: 'row-reverse',
     paddingVertical: 10,
-    marginTop: 10,
+    marginTop: 2,
   },
   productInfoContentCounterOrderButtonView: {
-    marginTop: 10,
+    marginTop: 2,
     width: '100%',
     justifyContent: 'flex-start',
     alignItems: 'center',

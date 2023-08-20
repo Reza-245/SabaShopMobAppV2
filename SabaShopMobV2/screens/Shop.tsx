@@ -166,6 +166,7 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
     async function handleOrder() {
       setOrdering(true);
       const customer = await AsyncStorage.getItem('saba2token');
+
       let orderObject: object[] = [];
       for (let ordered of products) {
         let order = {
@@ -407,7 +408,9 @@ const Shop = ({ordersNumber, setOrdersNumber}: any) => {
                               {!isEmpty(pro.pic_path) ? (
                                 <Image
                                   style={styles.shopBasketContentImage}
-                                  source={{uri: endpoints.URL + pro.pic_path}}
+                                  source={{
+                                    uri: endpoints.ImageURL + pro.pic_path,
+                                  }}
                                 />
                               ) : (
                                 <Image

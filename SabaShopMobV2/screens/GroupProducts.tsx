@@ -69,9 +69,6 @@ const GroupProducts = ({route}: any) => {
           .then(({data}) => {
             setProducts(data);
             setLoading(false);
-          })
-          .catch(err => {
-            console.log(err);
           });
       }, 300),
       [],
